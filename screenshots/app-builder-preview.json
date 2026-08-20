@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Pinmark",
+      "hasCanvas": false,
+      "bodyTextLen": 962,
+      "bodyTextHash": "c22a37fce43d341c961c56723333b1508ddd4fc235a345adaa0d6a7541f892b0",
+      "bodyTextPrefix": "Pinmark 1 2 3 Thu, Aug 20, 06:10 PM EDITOR·2 WIDGETS Today Morni",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Pinmark",
+      "hasCanvas": false,
+      "bodyTextLen": 310,
+      "bodyTextHash": "cdb2fd5a22c77adfe8c9f7b394fed1f337596746ad5507619de678913249e9bd",
+      "bodyTextPrefix": "Pinmark Today Morning pages. Keep this pinned to the editor. Rev",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

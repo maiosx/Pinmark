@@ -1,0 +1,295 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  --color-bg: #141613;
+  --color-bg-elevated: #1c1e1b;
+  --color-bg-subtle: #232522;
+  --color-fg: #eceae4;
+  --color-muted: #9a9a90;
+  --color-subtle: #6e6e66;
+  --color-accent: #c5c1b4;
+  --color-accent-fg: #141613;
+  --color-sage: #8a9a7c;
+  --color-border: #2a2c28;
+  --color-border-strong: #3a3c38;
+  --color-bar: #101110;
+  --color-paper: #f3efe6;
+  --color-ink: #1a1c18;
+  --color-danger: #c45c4a;
+  --color-link: #8aa4b8;
+  --color-ring: #c5c1b4;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+
+  --shadow-widget:
+    0 0 0 1px color-mix(in oklab, var(--color-fg) 10%, transparent),
+    0 18px 40px -18px rgb(0 0 0 / 0.55),
+    0 2px 6px rgb(0 0 0 / 0.25);
+  --shadow-editor:
+    0 0 0 1px color-mix(in oklab, var(--color-fg) 12%, transparent),
+    0 30px 80px -24px rgb(0 0 0 / 0.65);
+
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100%;
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-sage) 40%, transparent);
+    color: var(--color-fg);
+  }
+}
+
+@layer components {
+  .md {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    color: var(--color-fg);
+    line-height: 1.55;
+    text-wrap: pretty;
+    word-break: break-word;
+  }
+
+  .md > :first-child {
+    margin-top: 0;
+  }
+  .md > :last-child {
+    margin-bottom: 0;
+  }
+
+  .md h1,
+  .md h2,
+  .md h3,
+  .md h4 {
+    font-weight: 550;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    line-height: 1.2;
+    margin: 0.9em 0 0.4em;
+  }
+  .md h1 {
+    font-size: 1.55em;
+  }
+  .md h2 {
+    font-size: 1.22em;
+  }
+  .md h3 {
+    font-size: 1.05em;
+  }
+
+  .md p,
+  .md ul,
+  .md ol,
+  .md blockquote,
+  .md pre,
+  .md table {
+    margin: 0.55em 0;
+  }
+
+  .md a {
+    color: var(--color-link);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+
+  .md strong {
+    font-weight: 650;
+  }
+  .md em {
+    font-style: italic;
+  }
+  .md del {
+    opacity: 0.7;
+  }
+
+  .md ul {
+    list-style: disc;
+    padding-left: 1.2em;
+  }
+  .md ol {
+    list-style: decimal;
+    padding-left: 1.2em;
+  }
+  .md li {
+    margin: 0.15em 0;
+  }
+  .md ul.contains-task-list {
+    list-style: none;
+    padding-left: 0;
+  }
+  .md li.task-list-item {
+    display: flex;
+    gap: 0.5em;
+    align-items: flex-start;
+    list-style: none;
+  }
+  .md li.task-list-item input {
+    margin-top: 0.28em;
+    accent-color: var(--color-sage);
+    width: 0.95em;
+    height: 0.95em;
+    flex-shrink: 0;
+  }
+
+  .md blockquote {
+    border-left: 2px solid var(--color-sage);
+    padding-left: 0.85em;
+    color: var(--color-muted);
+    font-style: italic;
+  }
+
+  .md code {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    background: color-mix(in oklab, var(--color-fg) 8%, transparent);
+    padding: 0.12em 0.35em;
+    border-radius: var(--radius-xs);
+  }
+  .md pre {
+    background: color-mix(in oklab, var(--color-ink) 55%, var(--color-bg-elevated));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.75em 0.9em;
+    overflow-x: auto;
+  }
+  .md pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.78em;
+    line-height: 1.5;
+  }
+
+  .md table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-sans);
+    font-size: 0.88em;
+  }
+  .md th,
+  .md td {
+    border: 1px solid var(--color-border);
+    padding: 0.35em 0.55em;
+    text-align: left;
+  }
+  .md th {
+    font-weight: 600;
+    background: color-mix(in oklab, var(--color-fg) 6%, transparent);
+  }
+
+  .md hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 1em 0;
+  }
+
+  .md img {
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+    outline: 1px solid color-mix(in oklab, var(--color-fg) 10%, transparent);
+    outline-offset: -1px;
+  }
+
+  .md-widget > h1:first-child {
+    display: none;
+  }
+  .md-widget > h1:first-child + * {
+    margin-top: 0;
+  }
+
+  .md-paper {
+    color: var(--color-ink);
+  }
+  .md-paper a {
+    color: #2c5a78;
+  }
+  .md-paper code {
+    background: color-mix(in oklab, var(--color-ink) 8%, transparent);
+  }
+  .md-paper pre {
+    background: #ece7db;
+    border-color: color-mix(in oklab, var(--color-ink) 12%, transparent);
+  }
+  .md-paper th,
+  .md-paper td {
+    border-color: color-mix(in oklab, var(--color-ink) 14%, transparent);
+  }
+  .md-paper th {
+    background: color-mix(in oklab, var(--color-ink) 6%, transparent);
+  }
+  .md-paper hr {
+    border-top-color: color-mix(in oklab, var(--color-ink) 16%, transparent);
+  }
+  .md-paper blockquote {
+    color: color-mix(in oklab, var(--color-ink) 62%, transparent);
+  }
+
+  .editor-frame {
+    left: 0.75rem;
+    right: 0.75rem;
+    top: 3.5rem;
+    bottom: 0.75rem;
+  }
+  @media (min-width: 1024px) {
+    .editor-frame {
+      left: 20rem;
+      right: 2rem;
+      top: 4rem;
+      bottom: 1.5rem;
+    }
+  }
+
+  .grain {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe-only {
+    animation: none !important;
+    transition: none !important;
+  }
+}

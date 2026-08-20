@@ -1,0 +1,40 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Pinmark",
+      "hasCanvas": false,
+      "bodyTextLen": 962,
+      "bodyTextHash": "b88d40df4ae5c4a9f8117dbedf7ca88e0d4306456ca5eb1a814b7d7f8e7fd61e",
+      "bodyTextPrefix": "Pinmark 1 2 3 Thu, Aug 20, 06:13 PM EDITOR·2 WIDGETS Today Morni",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Pinmark",
+      "hasCanvas": false,
+      "bodyTextLen": 310,
+      "bodyTextHash": "cdb2fd5a22c77adfe8c9f7b394fed1f337596746ad5507619de678913249e9bd",
+      "bodyTextPrefix": "Pinmark Today Morning pages. Keep this pinned to the editor. Rev",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "desktop: body text replaced (similar length, page start changed)"
+  ]
+}
