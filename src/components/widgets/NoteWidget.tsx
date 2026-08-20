@@ -189,10 +189,10 @@ export function NoteWidget({ widget }: Props) {
           )}
           title="Drag to move. Double-click to open in the editor."
         >
-          {doc.title}
+          {doc.title.trim() || "Untitled"}
         </span>
         <div
-          className="flex shrink-0 items-center gap-0.5"
+          className="relative z-10 ml-auto flex shrink-0 items-center gap-0.5"
           data-no-drag
           onPointerDown={(e) => e.stopPropagation()}
         >

@@ -270,7 +270,7 @@ PanelWindow {
               right: parent.right
               verticalCenter: parent.verticalCenter
               leftMargin: 10
-              rightMargin: 80
+              rightMargin: 92
             }
             text: Model.titleFromBody(win.source, "Untitled")
             elide: Text.ElideRight
@@ -283,13 +283,13 @@ PanelWindow {
           Item {
             id: dragStrip
             z: 5
-            anchors { fill: parent; rightMargin: 76 }
+            anchors { fill: parent; rightMargin: 92 }
 
             DragHandler {
               id: moveHandler
               target: null
               acceptedButtons: Qt.LeftButton
-              grabPermissions: PointerHandler.CanTakeOverFromAnything
+              grabPermissions: PointerHandler.TakeOverForbidden
               property real startX: 0
               property real startY: 0
               onActiveChanged: {
@@ -317,46 +317,34 @@ PanelWindow {
             }
           }
 
-          Row {
-            z: 10
+          Rectangle {
+            id: closeBtn
+            z: 100
+            width: 72
+            height: 26
+            radius: 4
             anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 4 }
-            spacing: 4
-
-            component HeaderButton: Rectangle {
-              property alias glyph: label.text
-              property color glyphColor: win.pen
-              signal activated
-              width: Math.max(56, label.implicitWidth + 18)
-              height: 26
-              radius: 4
-              color: hover.containsMouse ? Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.14) : Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.06)
-              border.width: 1
-              border.color: Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.18)
-              Text {
-                id: label
-                anchors.centerIn: parent
-                color: parent.glyphColor
-                font.family: Style.font.family
-                font.pixelSize: Style.font.caption
-              }
-              MouseArea {
-                id: hover
-                anchors.fill: parent
-                hoverEnabled: true
-                preventStealing: true
-                propagateComposedEvents: false
-                cursorShape: Qt.PointingHandCursor
-                onPressed: function (m) {
-                  m.accepted = true
-                  parent.activated()
-                }
-              }
+            color: closeHover.containsMouse ? Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.14) : Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.06)
+            border.width: 1
+            border.color: Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.18)
+            Text {
+              anchors.centerIn: parent
+              text: "Close"
+              color: win.pen
+              font.family: Style.font.family
+              font.pixelSize: Style.font.caption
             }
-
-            HeaderButton {
-              glyph: "Close"
-              glyphColor: win.pen
-              onActivated: host.closeWidget(win.modelData)
+            MouseArea {
+              id: closeHover
+              anchors.fill: parent
+              hoverEnabled: true
+              preventStealing: true
+              propagateComposedEvents: false
+              cursorShape: Qt.PointingHandCursor
+              onPressed: function (m) {
+                m.accepted = true
+                host.closeWidget(win.modelData)
+              }
             }
           }
         }

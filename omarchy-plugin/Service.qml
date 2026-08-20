@@ -249,7 +249,11 @@ Item {
   function closeWidget(id) {
     var note = root.noteData(id)
     if (!note) return
-    root.updateNote(id, { desk: false, pinned: false })
+    note.desk = false
+    note.pinned = false
+    root.placement++
+    root.contentTick++
+    saveTimer.restart()
   }
 
   function updateNote(id, patch) {
