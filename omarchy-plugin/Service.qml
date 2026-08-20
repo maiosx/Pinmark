@@ -54,6 +54,7 @@ Item {
   }
 
   property int placement: 0
+  property int contentTick: 0
   property int topStack: 0
 
   readonly property int screenCount: Quickshell.screens.length
@@ -167,8 +168,8 @@ Item {
     "",
     "> Pin a widget so it sits on the editor.",
     "",
-    "Header: ● colour · ◉ pin · ◀ ▶ screen · + new · ✕ delete.",
-    "Drag the header to move, the corner grip to resize."
+    "Header: **Unpin** sends a widget to the wallpaper. **Close** hides it.",
+    "The document stays in the editor. Drag the header to move."
   ].join("\n")
 
   readonly property string welcomeText: [
@@ -187,8 +188,8 @@ Item {
     "## Pin",
     "",
     "1. Open a document in this editor",
-    "2. Click **◉** on the widget header",
-    "3. Drag it onto the editor",
+    "2. Click **Pin to desk**, then **Pin** on the widget to float it on the editor",
+    "3. **Unpin** sends it back to the wallpaper. **Close** hides the widget.",
     "",
     "## Checklists",
     "",
@@ -236,8 +237,15 @@ Item {
     if (root.noteIds.length === 0) root.addNote(null, { text: "", pinned: false })
     else {
       root.placement++
+      root.contentTick++
       saveTimer.restart()
     }
+  }
+
+  function closeWidget(id) {
+    var note = root.noteData(id)
+    if (!note) return
+    root.updateNote(id, { desk: false, pinned: false })
   }
 
   function updateNote(id, patch) {
@@ -245,13 +253,16 @@ Item {
     if (!note) return
     var moved = false
     var layerChanged = false
+    var textChanged = false
     for (var key in patch) {
       if (key === "screen" && String(note[key]) !== String(patch[key])) moved = true
       if (key === "pinned" && !!note[key] !== !!patch[key]) layerChanged = true
       if (key === "desk" && !!note[key] !== !!patch[key]) layerChanged = true
+      if (key === "text" && String(note[key]) !== String(patch[key])) textChanged = true
       note[key] = patch[key]
     }
     if (moved || layerChanged) root.placement++
+    if (textChanged) root.contentTick++
     saveTimer.restart()
   }
 
@@ -260,6 +271,7 @@ Item {
     if (!note) return
     note.pinned = !note.pinned
     root.placement++
+    root.contentTick++
     saveTimer.restart()
   }
 

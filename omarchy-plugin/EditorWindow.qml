@@ -57,6 +57,10 @@ PanelWindow {
   Connections {
     target: host
     function onActiveIdChanged() { editor.syncBody() }
+    function onContentTickChanged() {
+      if (body.activeFocus) return
+      editor.syncBody()
+    }
   }
 
   function apply(cmd) {
@@ -284,14 +288,24 @@ PanelWindow {
               spacing: 2
               Text {
                 width: parent.width
-                text: note ? Model.titleFromBody(note.text, "Untitled") : "Untitled"
+                text: {
+                  host.contentTick
+                  var n = host.noteData(modelData)
+                  return n ? Model.titleFromBody(n.text, "Untitled") : "Untitled"
+                }
                 elide: Text.ElideRight
                 color: "#eceae4"
                 font.family: Style.font.family
                 font.pixelSize: Style.font.body
               }
               Text {
-                text: note && note.pinned ? "Pinned widget" : "Desk widget"
+                text: {
+                  host.contentTick
+                  var n = host.noteData(modelData)
+                  if (!n) return ""
+                  if (n.desk === false) return "In editor"
+                  return n.pinned ? "Pinned widget" : "Desk widget"
+                }
                 color: "#6e6e66"
                 font.family: Style.font.family
                 font.pixelSize: Style.font.caption
@@ -398,7 +412,10 @@ PanelWindow {
             width: parent.width
             wrapMode: Text.Wrap
             textFormat: Text.MarkdownText
-            text: editor.active ? Model.renderMarkdown(editor.active.text) : ""
+            text: {
+              host.contentTick
+              return editor.active ? Model.renderMarkdown(editor.active.text) : ""
+            }
             color: "#eceae4"
             linkColor: "#8aa4b8"
             font.family: Style.font.family

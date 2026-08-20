@@ -157,6 +157,27 @@ PanelWindow {
 
       property string source: ""
       property bool editing: false
+      property int seenTick: -1
+
+      function syncText() {
+        var n = host.noteData(win.modelData)
+        if (!n) return
+        if (host.contentTick === win.seenTick && n.text === win.source) return
+        win.seenTick = host.contentTick
+        if (win.editing && body.text === n.text) {
+          win.source = n.text
+          return
+        }
+        if (win.editing) return
+        if (n.text === win.source && body.text === n.text) return
+        win.source = n.text
+        if (body.text !== n.text) body.text = n.text
+      }
+
+      Connections {
+        target: host
+        function onContentTickChanged() { win.syncText() }
+      }
       function followLink(link) {
         var s = String(link)
         if (s.indexOf("toggle:") !== 0) {
@@ -191,6 +212,7 @@ PanelWindow {
         nscreen = note.screen
         win.source = note.text
         body.text = note.text
+        win.seenTick = host.contentTick
       }
       onEditingChanged: if (editing) body.forceActiveFocus()
       onNxChanged: host.updateNote(win.modelData, { x: nx })
@@ -243,7 +265,7 @@ PanelWindow {
 
           MouseArea {
             id: dragArea
-            anchors { fill: parent; rightMargin: 132 }
+            anchors { fill: parent; rightMargin: 148 }
             cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
             property real ox: 0
             property real oy: 0
@@ -273,10 +295,12 @@ PanelWindow {
               property alias glyph: label.text
               property color glyphColor: win.pen
               signal activated
-              implicitWidth: Math.max(28, label.implicitWidth + 14)
-              height: 24
+              width: Math.max(56, label.implicitWidth + 18)
+              height: 26
               radius: 4
-              color: hover.containsMouse ? Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.12) : "transparent"
+              color: hover.containsMouse ? Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.14) : Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.06)
+              border.width: 1
+              border.color: Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.18)
               Text {
                 id: label
                 anchors.centerIn: parent
@@ -289,8 +313,12 @@ PanelWindow {
                 anchors.fill: parent
                 hoverEnabled: true
                 preventStealing: true
+                propagateComposedEvents: false
                 cursorShape: Qt.PointingHandCursor
-                onClicked: parent.activated()
+                onPressed: function (m) {
+                  m.accepted = true
+                  parent.activated()
+                }
               }
             }
 
@@ -302,7 +330,7 @@ PanelWindow {
             HeaderButton {
               glyph: "Close"
               glyphColor: win.pen
-              onActivated: host.removeNote(win.modelData)
+              onActivated: host.closeWidget(win.modelData)
             }
           }
         }
@@ -379,6 +407,10 @@ PanelWindow {
             font.family: Style.font.family
             font.pixelSize: Style.font.subtitle
             onTextChanged: {
+              if (text === win.source) {
+                var n = host.noteData(win.modelData)
+                if (n && n.text === text) return
+              }
               win.source = text
               host.updateNote(win.modelData, { text: text })
             }
