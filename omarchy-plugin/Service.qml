@@ -374,6 +374,7 @@ Item {
     var text = String(note.text || "")
     if (text.length && text.charAt(text.length - 1) !== "\n") text += "\n"
     root.saveSuggest = Model.suggestedFileName(text)
+    root.editorVisible = false
     root.savePending = true
     root.flush()
     saveRequest.setText(JSON.stringify({ name: root.saveSuggest, text: text }) + "\n")

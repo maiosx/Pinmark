@@ -42,6 +42,7 @@ export function MarkdownEditor() {
   const sidebarOpen = useStore((s) => s.sidebarOpen);
   const setSidebarOpen = useStore((s) => s.setSidebarOpen);
   const toggleEditor = useStore((s) => s.toggleEditor);
+  const setEditorVisible = useStore((s) => s.setEditorVisible);
   const docs = useStore((s) => s.docs);
   const docOrder = useStore((s) => s.docOrder);
   const widgets = useStore((s) => s.widgets);
@@ -79,7 +80,11 @@ export function MarkdownEditor() {
         e.preventDefault();
         const current = useStore.getState();
         const active = current.activeDocId ? current.docs[current.activeDocId] : undefined;
-        if (active) void saveMarkdownFile(active.title, active.body);
+        if (active) {
+          void exitFullscreen();
+          current.setEditorVisible(false);
+          void saveMarkdownFile(active.title, active.body);
+        }
       } else if (e.key === "Escape" && fullscreen) {
         e.preventDefault();
         void exitFullscreen();
@@ -163,7 +168,11 @@ export function MarkdownEditor() {
       run("link");
     } else if (meta && e.key.toLowerCase() === "s") {
       e.preventDefault();
-      if (doc) void saveMarkdownFile(doc.title, doc.body);
+      if (doc) {
+        void exitFullscreen();
+        setEditorVisible(false);
+        void saveMarkdownFile(doc.title, doc.body);
+      }
     } else if (e.key === "Tab") {
       e.preventDefault();
       const el = e.currentTarget;
@@ -291,7 +300,11 @@ export function MarkdownEditor() {
             size="sm"
             className="hidden sm:inline-flex"
             aria-label="Save markdown file"
-            onClick={() => void saveMarkdownFile(doc.title, doc.body)}
+            onClick={() => {
+              void exitFullscreen();
+              setEditorVisible(false);
+              void saveMarkdownFile(doc.title, doc.body);
+            }}
           >
             <Save className="size-3.5" />
             Save

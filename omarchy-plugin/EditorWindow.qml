@@ -204,7 +204,10 @@ PanelWindow {
           MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
-            onClicked: host.openSave()
+            onClicked: {
+              editor.fullscreen = false
+              host.openSave()
+            }
           }
         }
 
