@@ -25,11 +25,13 @@ import {
   Type,
   Maximize2,
   Minimize2,
+  Save,
   X,
 } from "lucide-react";
 import { MarkdownPreview } from "@/components/markdown/MarkdownPreview";
 import { Button } from "@/components/ui/button";
 import { applyCommand, type EditorCommand } from "@/lib/markdown";
+import { saveMarkdownFile } from "@/lib/open-markdown";
 import { useStore } from "@/lib/store";
 import { cn, readingTime, relativeTime, wordCount } from "@/lib/utils";
 
@@ -73,6 +75,11 @@ export function MarkdownEditor() {
       if (e.key === "F11") {
         e.preventDefault();
         void toggleFullscreen();
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        const current = useStore.getState();
+        const active = current.activeDocId ? current.docs[current.activeDocId] : undefined;
+        if (active) void saveMarkdownFile(active.title, active.body);
       } else if (e.key === "Escape" && fullscreen) {
         e.preventDefault();
         void exitFullscreen();
@@ -154,6 +161,9 @@ export function MarkdownEditor() {
     } else if (meta && e.key.toLowerCase() === "k") {
       e.preventDefault();
       run("link");
+    } else if (meta && e.key.toLowerCase() === "s") {
+      e.preventDefault();
+      if (doc) void saveMarkdownFile(doc.title, doc.body);
     } else if (e.key === "Tab") {
       e.preventDefault();
       const el = e.currentTarget;
@@ -273,6 +283,18 @@ export function MarkdownEditor() {
           >
             <Trash2 className="size-3.5" />
             Delete
+          </Button>
+        )}
+        {doc && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+            aria-label="Save markdown file"
+            onClick={() => void saveMarkdownFile(doc.title, doc.body)}
+          >
+            <Save className="size-3.5" />
+            Save
           </Button>
         )}
         <Button
@@ -408,6 +430,18 @@ export function MarkdownEditor() {
                 <Pin className={cn("size-3", onDesk && "fill-current")} />
                 {onEditor ? "To desk" : onDesk ? "On desk" : "Pin"}
               </Button>
+              {doc && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs sm:hidden"
+                  aria-label="Save markdown file"
+                  onClick={() => void saveMarkdownFile(doc.title, doc.body)}
+                >
+                  <Save className="size-3" />
+                  Save
+                </Button>
+              )}
               {doc && (
                 <Button
                   variant="ghost"

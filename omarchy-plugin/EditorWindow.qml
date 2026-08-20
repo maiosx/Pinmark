@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Dialogs
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
@@ -73,6 +74,22 @@ PanelWindow {
     host.updateNote(host.activeId, { text: r.next })
     body.forceActiveFocus()
     body.select(r.selStart, r.selEnd)
+  }
+
+  function openSave() {
+    var n = editor.active
+    var name = n ? Model.suggestedFileName(n.text) : "untitled.md"
+    saveDialog.selectedFile = "file://" + Quickshell.env("HOME") + "/Documents/" + name
+    saveDialog.open()
+  }
+
+  FileDialog {
+    id: saveDialog
+    title: "Save markdown"
+    fileMode: FileDialog.SaveFile
+    nameFilters: ["Markdown files (*.md)"]
+    defaultSuffix: "md"
+    onAccepted: host.saveNoteTo(selectedFile)
   }
 
   Rectangle {
@@ -183,6 +200,28 @@ PanelWindow {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: if (host.activeId) host.removeNote(host.activeId)
+          }
+        }
+
+        Rectangle {
+          width: saveLabel.implicitWidth + 18
+          height: 26
+          radius: 6
+          color: "transparent"
+          border.width: 1
+          border.color: Qt.rgba(0.93, 0.92, 0.89, 0.18)
+          Text {
+            id: saveLabel
+            anchors.centerIn: parent
+            text: "Save"
+            color: "#eceae4"
+            font.family: Style.font.family
+            font.pixelSize: Style.font.caption
+          }
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: editor.openSave()
           }
         }
 

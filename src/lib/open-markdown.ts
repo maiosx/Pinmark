@@ -72,3 +72,56 @@ export function bindMarkdownFileOpener() {
     window.removeEventListener("dragover", onDragOver);
   };
 }
+
+export function filenameFromTitle(title: string) {
+  const base =
+    title
+      .trim()
+      .replace(/[<>:"/\\|?*\u0000-\u001f]+/g, "")
+      .replace(/\s+/g, " ")
+      .slice(0, 80) || "untitled";
+  return /\.(md|markdown)$/i.test(base) ? base : `${base}.md`;
+}
+
+export async function saveMarkdownFile(title: string, body: string) {
+  const name = filenameFromTitle(title);
+  const picker = (
+    window as Window & {
+      showSaveFilePicker?: (opts: {
+        suggestedName: string;
+        types: { description: string; accept: Record<string, string[]> }[];
+      }) => Promise<{
+        createWritable: () => Promise<{ write: (d: string) => Promise<void>; close: () => Promise<void> }>;
+      }>;
+    }
+  ).showSaveFilePicker;
+  const allowPicker =
+    typeof picker === "function" &&
+    window.self === window.top &&
+    !navigator.webdriver;
+  if (allowPicker) {
+    try {
+      const handle = await picker({
+        suggestedName: name,
+        types: [{ description: "Markdown", accept: { "text/markdown": [".md"] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(body);
+      await writable.close();
+      return true;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return false;
+    }
+  }
+  const blob = new Blob([body], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  return true;
+}

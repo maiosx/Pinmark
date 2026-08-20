@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.maiosx.pinmark",
   "name": "Pinmark",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": "maiosx",
   "license": "MIT",
   "description": "Markdown editor with pinnable widgets on the Omarchy desk. Hide folds the editor; pinned widgets stay on top of it.",

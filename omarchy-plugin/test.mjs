@@ -13,9 +13,10 @@ const EXPORTS = [
   "adjacentScreen",
   "orderedScreens",
   "applyCommand",
-  "titleFromBody"
+  "titleFromBody",
+  "suggestedFileName"
 ]
-const { renderMarkdown, toggleTask, screenForDrop, bounds, relocate, clampOnto, adjacentScreen, orderedScreens, applyCommand, titleFromBody } =
+const { renderMarkdown, toggleTask, screenForDrop, bounds, relocate, clampOnto, adjacentScreen, orderedScreens, applyCommand, titleFromBody, suggestedFileName } =
   new Function(src.replace(".pragma library", "") + `\nreturn { ${EXPORTS.join(", ")} }`)()
 
 const note = "# List\n\n- [x] milk\n- [ ] eggs\nnot a task\n  2) [ ] nested\n"
@@ -226,5 +227,7 @@ assert.equal(applyCommand("line", 0, 4, "h1").next, "# line")
 assert.equal(applyCommand("x", 0, 0, "task").next, "- [ ] x")
 assert.equal(titleFromBody("# Groceries\n\n- milk"), "Groceries")
 assert.equal(titleFromBody(""), "Untitled")
+assert.equal(suggestedFileName("# Groceries\n\n- milk"), "Groceries.md")
+assert.equal(suggestedFileName(""), "untitled.md")
 
 console.log("ok")

@@ -352,6 +352,18 @@ Item {
     if (ids.length === 0) root.seedDefaults()
   }
 
+  function saveNoteTo(url) {
+    var note = root.noteData(root.activeId)
+    if (!note) return
+    var dest = String(url || "")
+    dest = dest.replace(/^file:\/\//, "")
+    try { dest = decodeURIComponent(dest) } catch (e) {}
+    if (!dest) return
+    if (!/\.(md|markdown)$/i.test(dest)) dest += ".md"
+    saveOut.path = dest
+    saveOut.setText(note.text.charAt(note.text.length - 1) === "\n" ? note.text : note.text + "\n")
+  }
+
   function ingestOpenInbox(raw) {
     var list = null
     try { list = JSON.parse(raw) } catch (e) { list = null }
@@ -408,6 +420,16 @@ Item {
     onLoadFailed: root.load("")
     onSaveFailed: function (error) {
       console.warn("pinmark: could not write " + root.storePath + ": " + error)
+    }
+  }
+
+  FileView {
+    id: saveOut
+    watchChanges: false
+    atomicWrites: true
+    printErrors: false
+    onSaveFailed: function (error) {
+      console.warn("pinmark: could not save markdown: " + error)
     }
   }
 

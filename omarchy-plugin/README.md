@@ -65,6 +65,7 @@ No extra packages — Omarchy's shell (Quickshell/Qt) is enough.
 | Tick a box | Click ☐ / ☑ |
 | Pin to desk | Editor **Pin to desk** — puts the open document on the wallpaper |
 | Delete | Editor **Delete** — next to Pin to desk. Removes the open document |
+| Save | Editor **Save** — next to Delete. Writes a `.md` file |
 | Fullscreen | Editor **Fullscreen** — top right of the title bar. Esc or the button exits |
 | Close a widget | **Close** in the widget header — document stays in the editor |
 | Move | Drag the widget header — across monitors too |

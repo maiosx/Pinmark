@@ -39,6 +39,14 @@ function titleFromBody(body, fallback) {
   return fallback || "Untitled"
 }
 
+function suggestedFileName(body) {
+  var t = titleFromBody(body, "untitled")
+  t = String(t).replace(/[^\w\s\-]+/g, " ").trim().replace(/\s+/g, "-")
+  if (!t) t = "untitled"
+  if (!/\.md$/i.test(t)) t += ".md"
+  return t
+}
+
 function lineBounds(value, start, end) {
   var from = value.lastIndexOf("\n", start - 1) + 1
   var to = value.indexOf("\n", end)
