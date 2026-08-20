@@ -58,6 +58,7 @@ No extra packages — Omarchy's shell (Quickshell/Qt) is enough.
 | Board menu | Click the bar icon |
 | New widget | **New** in the board menu |
 | Hide / show editor | **Hide** / **Show**, or right click the bar icon |
+| Hide sidebar | Editor **Hide sidebar** — desktop title bar |
 | Cheat sheet | **Help** — drops a widget listing the syntax |
 | Edit in widget | Click the widget body |
 | Full editor | Show the editor; pick a document in the sidebar |

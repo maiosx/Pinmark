@@ -96,13 +96,41 @@ PanelWindow {
       color: "#141613"
       radius: 0
 
-      Text {
-        anchors { left: parent.left; leftMargin: 16; verticalCenter: parent.verticalCenter }
-        text: "Pinmark"
-        color: "#eceae4"
-        font.family: Style.font.family
-        font.pixelSize: Style.font.title
-        font.bold: true
+      Row {
+        anchors { left: parent.left; leftMargin: 10; verticalCenter: parent.verticalCenter }
+        spacing: 10
+
+        Rectangle {
+          visible: frame.width > 640
+          width: sideLabel.implicitWidth + 18
+          height: 26
+          radius: 6
+          color: editor.sidebarOpen ? "transparent" : Qt.rgba(0.93, 0.92, 0.89, 0.12)
+          border.width: 1
+          border.color: Qt.rgba(0.93, 0.92, 0.89, 0.18)
+          Text {
+            id: sideLabel
+            anchors.centerIn: parent
+            text: editor.sidebarOpen ? "Hide sidebar" : "Show sidebar"
+            color: "#eceae4"
+            font.family: Style.font.family
+            font.pixelSize: Style.font.caption
+          }
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: editor.sidebarOpen = !editor.sidebarOpen
+          }
+        }
+
+        Text {
+          anchors.verticalCenter: parent.verticalCenter
+          text: "Pinmark"
+          color: "#eceae4"
+          font.family: Style.font.family
+          font.pixelSize: Style.font.title
+          font.bold: true
+        }
       }
 
       Row {

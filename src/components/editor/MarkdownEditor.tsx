@@ -220,16 +220,18 @@ export function MarkdownEditor() {
       <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-2">
         <Button
           variant="ghost"
-          size="icon"
+          size="sm"
           className="hidden sm:inline-flex"
-          aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+          aria-pressed={!sidebarOpen}
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           {sidebarOpen ? (
-            <PanelLeftClose className="size-4" />
+            <PanelLeftClose className="size-3.5" />
           ) : (
-            <PanelLeftOpen className="size-4" />
+            <PanelLeftOpen className="size-3.5" />
           )}
+          {sidebarOpen ? "Hide sidebar" : "Show sidebar"}
         </Button>
         <Button
           variant="ghost"
