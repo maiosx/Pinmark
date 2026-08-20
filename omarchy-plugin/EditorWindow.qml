@@ -346,11 +346,11 @@ PanelWindow {
         color: Qt.rgba(0.93, 0.92, 0.89, 0.08)
       }
 
-      Column {
+      Item {
         anchors { fill: parent; margins: 10 }
-        spacing: 6
 
         Rectangle {
+          id: newDoc
           width: parent.width
           height: 28
           radius: 6
@@ -369,48 +369,114 @@ PanelWindow {
           }
         }
 
-        Repeater {
-          model: host.noteIds
+        Flickable {
+          id: docFlick
+          anchors {
+            top: newDoc.bottom
+            topMargin: 6
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            rightMargin: 10
+          }
+          clip: true
+          contentWidth: width
+          contentHeight: docCol.implicitHeight
+          boundsBehavior: Flickable.StopAtBounds
+          flickableDirection: Flickable.VerticalFlick
+
+          Column {
+            id: docCol
+            width: docFlick.width
+            spacing: 6
+
+            Repeater {
+              model: host.noteIds
+              Rectangle {
+                required property var modelData
+                width: docCol.width
+                height: 44
+                radius: 6
+                color: host.activeId === modelData ? Qt.rgba(0.93, 0.92, 0.89, 0.1) : "transparent"
+                readonly property var note: host.noteData(modelData)
+                Column {
+                  anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: 8; rightMargin: 8 }
+                  spacing: 2
+                  Text {
+                    width: parent.width
+                    text: {
+                      host.contentTick
+                      var n = host.noteData(modelData)
+                      return n ? Model.titleFromBody(n.text, "Untitled") : "Untitled"
+                    }
+                    elide: Text.ElideRight
+                    color: "#eceae4"
+                    font.family: Style.font.family
+                    font.pixelSize: Style.font.body
+                  }
+                  Text {
+                    text: {
+                      host.contentTick
+                      var n = host.noteData(modelData)
+                      if (!n) return ""
+                      if (n.desk === false) return "In editor"
+                      return n.pinned ? "Pinned widget" : "Desk widget"
+                    }
+                    color: "#6e6e66"
+                    font.family: Style.font.family
+                    font.pixelSize: Style.font.caption
+                  }
+                }
+                MouseArea {
+                  anchors.fill: parent
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: host.setActive(modelData)
+                }
+              }
+            }
+          }
+        }
+
+        Item {
+          id: docScroll
+          visible: docFlick.contentHeight > docFlick.height + 1
+          width: 8
+          anchors {
+            top: docFlick.top
+            bottom: docFlick.bottom
+            right: parent.right
+          }
+
           Rectangle {
-            required property var modelData
-            width: sidebar.width - 20
-            height: 44
-            radius: 6
-            color: host.activeId === modelData ? Qt.rgba(0.93, 0.92, 0.89, 0.1) : "transparent"
-            readonly property var note: host.noteData(modelData)
-            Column {
-              anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: 8; rightMargin: 8 }
-              spacing: 2
-              Text {
-                width: parent.width
-                text: {
-                  host.contentTick
-                  var n = host.noteData(modelData)
-                  return n ? Model.titleFromBody(n.text, "Untitled") : "Untitled"
-                }
-                elide: Text.ElideRight
-                color: "#eceae4"
-                font.family: Style.font.family
-                font.pixelSize: Style.font.body
-              }
-              Text {
-                text: {
-                  host.contentTick
-                  var n = host.noteData(modelData)
-                  if (!n) return ""
-                  if (n.desk === false) return "In editor"
-                  return n.pinned ? "Pinned widget" : "Desk widget"
-                }
-                color: "#6e6e66"
-                font.family: Style.font.family
-                font.pixelSize: Style.font.caption
-              }
+            anchors.fill: parent
+            radius: 4
+            color: Qt.rgba(0.93, 0.92, 0.89, 0.06)
+          }
+
+          Rectangle {
+            id: docThumb
+            width: parent.width
+            radius: 4
+            color: Qt.rgba(0.93, 0.92, 0.89, 0.28)
+            height: Math.max(24, docFlick.height * docFlick.height / Math.max(1, docFlick.contentHeight))
+            y: {
+              var maxY = Math.max(0, docScroll.height - height)
+              var maxC = Math.max(1, docFlick.contentHeight - docFlick.height)
+              return Math.max(0, Math.min(maxY, docFlick.contentY / maxC * maxY))
             }
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: Qt.PointingHandCursor
-              onClicked: host.setActive(modelData)
-            }
+          }
+
+          MouseArea {
+            anchors.fill: parent
+            preventStealing: true
+            onPressed: function (m) { docScroll.jump(m.y) }
+            onPositionChanged: function (m) { if (pressed) docScroll.jump(m.y) }
+          }
+
+          function jump(py) {
+            var maxC = Math.max(0, docFlick.contentHeight - docFlick.height)
+            var span = Math.max(1, height - docThumb.height)
+            docFlick.contentY = Math.max(0, Math.min(maxC, (py - docThumb.height / 2) / span * maxC))
           }
         }
       }

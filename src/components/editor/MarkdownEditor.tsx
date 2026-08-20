@@ -354,7 +354,7 @@ export function MarkdownEditor() {
               <Plus className="size-3.5" />
             </Button>
           </div>
-          <ul className="min-h-0 flex-1 overflow-auto px-2 pb-3">
+          <ul className="sidebar-scroll min-h-0 flex-1 overflow-y-scroll px-2 pb-3">
             {docOrder.map((id) => {
               const d = docs[id];
               if (!d) return null;
