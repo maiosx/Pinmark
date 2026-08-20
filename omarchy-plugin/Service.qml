@@ -248,6 +248,7 @@ Item {
     for (var key in patch) {
       if (key === "screen" && String(note[key]) !== String(patch[key])) moved = true
       if (key === "pinned" && !!note[key] !== !!patch[key]) layerChanged = true
+      if (key === "desk" && !!note[key] !== !!patch[key]) layerChanged = true
       note[key] = patch[key]
     }
     if (moved || layerChanged) root.placement++
@@ -260,6 +261,21 @@ Item {
     note.pinned = !note.pinned
     root.placement++
     saveTimer.restart()
+  }
+
+  function pinActive() {
+    var id = root.activeId
+    var note = root.noteData(id)
+    if (!note) return
+    if (note.desk !== false && note.pinned !== true) return
+    var y = 80
+    for (var i = 0; i < root.noteIds.length; i++) {
+      var n = root.noteData(root.noteIds[i])
+      if (!n || n.id === id || n.desk === false || n.pinned === true) continue
+      if (Math.abs((n.x || 0) - 20) < 140)
+        y = Math.max(y, (n.y || 0) + (n.h || 240) + 12)
+    }
+    root.updateNote(id, { desk: true, pinned: false, x: 20, y: y })
   }
 
   function setActive(id) {

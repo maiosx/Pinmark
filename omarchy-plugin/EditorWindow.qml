@@ -139,6 +139,33 @@ PanelWindow {
         }
 
         Rectangle {
+          width: pinLabel.implicitWidth + 18
+          height: 26
+          radius: 6
+          color: "transparent"
+          border.width: 1
+          border.color: Qt.rgba(0.93, 0.92, 0.89, 0.18)
+          Text {
+            id: pinLabel
+            anchors.centerIn: parent
+            text: {
+              var n = editor.active
+              if (n && n.desk !== false && n.pinned !== true) return "On desk"
+              if (n && n.pinned) return "Move to desk"
+              return "Pin to desk"
+            }
+            color: "#eceae4"
+            font.family: Style.font.family
+            font.pixelSize: Style.font.caption
+          }
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: host.pinActive()
+          }
+        }
+
+        Rectangle {
           width: hideLabel.implicitWidth + 18
           height: 26
           radius: 6

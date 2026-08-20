@@ -54,6 +54,7 @@ No extra packages — Omarchy's shell (Quickshell/Qt) is enough.
 | Full editor | Show the editor; pick a document in the sidebar |
 | Render | Click away, or `Esc` |
 | Tick a box | Click ☐ / ☑ |
+| Pin to desk | Editor **Pin to desk** — puts the open document on the wallpaper |
 | Pin on the editor | `◉` in the widget header — Overlay layer, above the editor |
 | Unpin to the desk | `⊙` — Bottom layer, under normal windows |
 | Move | Drag the header — across monitors too |
