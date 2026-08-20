@@ -295,10 +295,10 @@ Item {
     root.updateNote(id, { desk: true, pinned: false, x: 20, y: y })
   }
 
-  function setActive(id) {
+  function setActive(id, reveal) {
     if (!root.noteData(id)) return
     root.activeId = String(id)
-    root.editorVisible = true
+    if (reveal !== false) root.editorVisible = true
   }
 
   function seedDefaults() {

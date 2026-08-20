@@ -297,7 +297,6 @@ PanelWindow {
                   startX = win.nx
                   startY = win.ny
                   win.raise()
-                  host.setActive(win.modelData)
                   if (host.dragId !== win.modelData)
                     host.beginDrag(win.modelData, card, win.nw, win.nh)
                 } else {
@@ -406,7 +405,7 @@ PanelWindow {
             cursorShape: rendered.linkAt(mouseX, mouseY) ? Qt.PointingHandCursor : Qt.IBeamCursor
             onClicked: function (m) {
               win.raise()
-              host.setActive(win.modelData)
+              host.setActive(win.modelData, false)
               var link = rendered.linkAt(m.x, m.y)
               if (link) win.followLink(link)
               else win.editing = true

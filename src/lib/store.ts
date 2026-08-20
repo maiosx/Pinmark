@@ -58,7 +58,7 @@ type State = {
   setEditorMode: (m: EditorMode) => void;
   setSidebarOpen: (v: boolean) => void;
   setMenuOpen: (v: boolean) => void;
-  setActiveDoc: (id: string) => void;
+  setActiveDoc: (id: string, opts?: { reveal?: boolean }) => void;
   addDoc: (seed?: Partial<Doc> & { withWidget?: boolean; widget?: Partial<Widget>; focus?: boolean }) => string;
   updateDoc: (id: string, patch: Partial<Pick<Doc, "title" | "body">>) => void;
   removeDoc: (id: string) => void;
@@ -191,7 +191,11 @@ export const useStore = create<State>()(
       setEditorMode: (m) => set({ editorMode: m }),
       setSidebarOpen: (v) => set({ sidebarOpen: v }),
       setMenuOpen: (v) => set({ menuOpen: v }),
-      setActiveDoc: (id) => set({ activeDocId: id, editorVisible: true }),
+      setActiveDoc: (id, opts) =>
+        set((s) => ({
+          activeDocId: id,
+          editorVisible: opts?.reveal === false ? s.editorVisible : true,
+        })),
       addDoc: (opts) => {
         const id = uid("d");
         const body = opts?.body ?? "";

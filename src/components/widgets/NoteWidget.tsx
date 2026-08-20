@@ -167,7 +167,10 @@ export function NoteWidget({ widget }: Props) {
         )}
         style={{ touchAction: "none" }}
         onPointerDown={startDrag}
-        onDoubleClick={() => setActiveDoc(widget.docId)}
+        onDoubleClick={() => {
+          if (moved.current) return;
+          setActiveDoc(widget.docId);
+        }}
       >
         <button
           type="button"
