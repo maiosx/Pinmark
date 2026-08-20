@@ -449,7 +449,11 @@ export function MarkdownEditor() {
                   size="sm"
                   className="h-7 px-2 text-xs sm:hidden"
                   aria-label="Save markdown file"
-                  onClick={() => void saveMarkdownFile(doc.title, doc.body)}
+                  onClick={() => {
+                    void exitFullscreen();
+                    setEditorVisible(false);
+                    void saveMarkdownFile(doc.title, doc.body);
+                  }}
                 >
                   <Save className="size-3" />
                   Save
