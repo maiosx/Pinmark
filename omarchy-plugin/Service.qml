@@ -238,7 +238,8 @@ Item {
     delete root.notes[key]
     root.noteIds = root.noteIds.filter(function (n) { return n !== key })
     if (root.activeId === key) root.activeId = root.noteIds.length ? root.noteIds[0] : ""
-    if (root.noteIds.length === 0) root.addNote(null, { text: "", pinned: false })
+    if (root.noteIds.length === 0)
+      root.addNote(null, { text: "# Untitled\n\n", pinned: false, desk: false, focus: false })
     else {
       root.placement++
       root.contentTick++
@@ -286,8 +287,12 @@ Item {
   function pinActive() {
     var id = root.activeId
     var note = root.noteData(id)
-    if (!note) return
-    if (note.desk !== false && note.pinned !== true) return
+    if (!note) {
+      id = root.noteIds.length ? root.noteIds[0] : ""
+      note = root.noteData(id)
+      if (!note) return
+      root.activeId = id
+    }
     var y = 80
     for (var i = 0; i < root.noteIds.length; i++) {
       var n = root.noteData(root.noteIds[i])
@@ -295,7 +300,13 @@ Item {
       if (Math.abs((n.x || 0) - 20) < 140)
         y = Math.max(y, (n.y || 0) + (n.h || 240) + 12)
     }
-    root.updateNote(id, { desk: true, pinned: false, x: 20, y: y })
+    note.desk = true
+    note.pinned = false
+    note.x = 20
+    note.y = y
+    root.placement++
+    root.contentTick++
+    saveTimer.restart()
   }
 
   function setActive(id, reveal) {

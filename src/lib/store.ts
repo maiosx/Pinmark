@@ -377,61 +377,76 @@ export const useStore = create<State>()(
       },
       pinActiveDoc: () => {
         const s = get();
-        if (!s.activeDocId) return;
-        const wide = s.boardW >= WIDE;
-        const existing = s.widgetOrder.find((id) => s.widgets[id]?.docId === s.activeDocId);
-        if (existing) {
-          const w = s.widgets[existing]!;
-          if (!wide && !w.pinned) {
-            const slot = editorSlot(s.boardW, s.boardH, { w: w.w, h: w.h });
-            set((cur) => {
-              const prev = cur.widgets[existing];
-              if (!prev) return cur;
-              const z = cur.topZ + 1;
-              return {
-                topZ: z,
-                widgets: {
-                  ...cur.widgets,
-                  [existing]: { ...prev, pinned: true, z, x: slot.x, y: slot.y },
-                },
-              };
-            });
-            return;
-          }
-          if (w.pinned) {
-            const slot = wide
-              ? railSlot(s.widgets, s.widgetOrder, s.boardH, existing)
-              : editorSlot(s.boardW, s.boardH, { w: w.w, h: w.h });
-            set((cur) => {
-              const prev = cur.widgets[existing];
-              if (!prev) return cur;
-              const z = cur.topZ + 1;
-              return {
-                topZ: z,
-                widgets: {
-                  ...cur.widgets,
-                  [existing]: {
-                    ...prev,
-                    pinned: !wide,
-                    z,
-                    x: slot.x,
-                    y: slot.y,
-                  },
-                },
-              };
-            });
+        let docId = s.activeDocId;
+        if (!docId || !s.docs[docId]) {
+          docId = s.docOrder.find((id) => s.docs[id]) ?? null;
+          if (!docId) return;
+          set({ activeDocId: docId, editorVisible: true });
+        }
+        const cur = get();
+        const wide = (cur.boardW ?? 1280) >= WIDE;
+        const existing = cur.widgetOrder.find((id) => cur.widgets[id]?.docId === docId);
+        if (!existing) {
+          if (wide) {
+            const slot = railSlot(cur.widgets, cur.widgetOrder, cur.boardH);
+            get().addWidget(docId, { pinned: false, ...slot });
           } else {
-            get().raiseWidget(existing);
+            const slot = editorSlot(cur.boardW, cur.boardH);
+            get().addWidget(docId, { pinned: true, ...slot });
           }
           return;
         }
-        if (wide) {
-          const slot = railSlot(s.widgets, s.widgetOrder, s.boardH);
-          get().addWidget(s.activeDocId, { pinned: false, ...slot });
-        } else {
-          const slot = editorSlot(s.boardW, s.boardH);
-          get().addWidget(s.activeDocId, { pinned: true, ...slot });
+        const w = cur.widgets[existing]!;
+        if (!wide && !w.pinned) {
+          const slot = editorSlot(cur.boardW, cur.boardH, { w: w.w, h: w.h });
+          set((state) => {
+            const prev = state.widgets[existing];
+            if (!prev) return state;
+            const z = state.topZ + 1;
+            return {
+              topZ: z,
+              widgets: {
+                ...state.widgets,
+                [existing]: { ...prev, pinned: true, z, x: slot.x, y: slot.y },
+              },
+            };
+          });
+          return;
         }
+        if (w.pinned) {
+          const slot = wide
+            ? railSlot(cur.widgets, cur.widgetOrder, cur.boardH, existing)
+            : editorSlot(cur.boardW, cur.boardH, { w: w.w, h: w.h });
+          set((state) => {
+            const prev = state.widgets[existing];
+            if (!prev) return state;
+            const z = state.topZ + 1;
+            return {
+              topZ: z,
+              widgets: {
+                ...state.widgets,
+                [existing]: {
+                  ...prev,
+                  pinned: !wide,
+                  z,
+                  x: slot.x,
+                  y: slot.y,
+                },
+              },
+            };
+          });
+          return;
+        }
+        const slot = railSlot(cur.widgets, cur.widgetOrder, cur.boardH, existing);
+        const z = cur.topZ + 1;
+        set({
+          topZ: z,
+          widgets: {
+            ...cur.widgets,
+            [existing]: { ...w, z, x: slot.x, y: slot.y, pinned: false },
+          },
+          widgetOrder: [existing, ...cur.widgetOrder.filter((id) => id !== existing)],
+        });
       },
       addHelp: () => {
         get().addDoc({

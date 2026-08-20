@@ -337,7 +337,7 @@ PanelWindow {
           MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
-            onClicked: host.addNote(null, { text: "# Untitled\n\n", pinned: false })
+            onClicked: host.addNote(null, { text: "# Untitled\n\n", pinned: false, desk: false })
           }
         }
 
