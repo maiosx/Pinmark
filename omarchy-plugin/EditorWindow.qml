@@ -85,7 +85,7 @@ PanelWindow {
       bottomMargin: editor.fullscreen ? 0 : Math.max(24, editor.height * 0.06)
     }
     color: "#1c1e1b"
-    radius: editor.fullscreen ? 0 : 14
+    radius: 0
     border.width: 1
     border.color: Qt.rgba(0.93, 0.92, 0.89, 0.12)
 
@@ -94,13 +94,7 @@ PanelWindow {
       anchors { top: parent.top; left: parent.left; right: parent.right }
       height: 44
       color: "#141613"
-      radius: 14
-
-      Rectangle {
-        anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
-        height: 14
-        color: parent.color
-      }
+      radius: 0
 
       Text {
         anchors { left: parent.left; leftMargin: 16; verticalCenter: parent.verticalCenter }

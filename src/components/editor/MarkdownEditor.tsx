@@ -190,7 +190,7 @@ export function MarkdownEditor() {
       aria-hidden={!visible}
       aria-label="Markdown editor"
       className={cn(
-        "editor-frame absolute z-[1000] flex flex-col overflow-hidden rounded-xl bg-bg-elevated shadow-[var(--shadow-editor)]",
+        "editor-frame absolute z-[1000] flex flex-col overflow-hidden bg-bg-elevated shadow-[var(--shadow-editor)]",
         "transition-[opacity,transform] duration-200 ease-[var(--ease-smooth-out)]",
         visible
           ? "pointer-events-auto scale-100 opacity-100"
