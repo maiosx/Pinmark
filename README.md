@@ -1,53 +1,116 @@
 # Pinmark
 
-Markdown, pinned to your desk.
+Markdown, pinned to your Omarchy desk.
 
-A full markdown editor with parchment widgets — not sticky notes. Hide folds
-the editor; widgets stay on the desk. Pin a widget and it sits *on* the editor.
+A full markdown editor that appears from the **Hide** button, with parchment
+widgets you can pin *on top of* the editor. Built as an Omarchy shell plugin
+for Arch Linux.
 
-This repository is the **web app**. The native **Omarchy / Arch** plugin lives
-in [`omarchy-plugin/`](omarchy-plugin/) and at
-[maiosx/pinmark-omarchy](https://github.com/maiosx/pinmark-omarchy).
-
-## Pin to desk
-
-Open a document and click **Pin to desk** in the editor header.
-
-- On a wide desk the widget lands in the left rail, beside the editor.
-- On a phone it lands on the lower part of the editor, below the toolbar.
-- The pin glyph on a widget then moves it onto the editor (lower right), not
-  over the title bar.
-
-The button reads **On desk** once the document is a widget, and **Move to desk**
-if that widget is currently sitting on the editor.
-
-## Web app
-
-```bash
-npm install
-npm run dev
-```
-
-Notes persist in the browser (`pinmark-v3`). Seed documents: Welcome, Today,
-and Groceries.
-
-## Arch / Omarchy
+## Install (Arch / Omarchy)
 
 ```bash
 omarchy plugin add https://github.com/maiosx/pinmark-omarchy.git --enable
 omarchy-restart-shell
 ```
 
-Or from a checkout of this repo:
+That registers the service (widgets + editor). For the bar icon, add the widget
+from the bar customization UI, or put `{ "id": "io.github.maiosx.pinmark" }`
+in a `bar.layout` section of `~/.config/omarchy/shell.json`.
+
+### Manual copy
+
+If you already have the files:
 
 ```bash
-cd omarchy-plugin
 chmod +x install.sh
 ./install.sh
 omarchy-restart-shell
 ```
 
-A zip of the plugin is also at [`public/pinmark-omarchy.zip`](public/pinmark-omarchy.zip).
+`install.sh` copies the plugin into `~/.config/omarchy/plugins/io.github.maiosx.pinmark`,
+installs `pinmark-open`, and registers Pinmark as the default app for `.md` files.
+
+## Markdown files
+
+Opening a `.md` file (double-click, `xdg-open note.md`, or `pinmark-open note.md`)
+loads it in the Pinmark editor.
+
+```bash
+pinmark-open ~/notes/draft.md
+```
+
+## Remove
+
+```bash
+omarchy plugin remove io.github.maiosx.pinmark
+omarchy-restart-shell
+```
+
+Notes live in `~/.local/state/omarchy/pinmark.json`; delete that file too if you
+don't want them back.
+
+No extra packages — Omarchy's shell (Quickshell/Qt) is enough.
+
+## Use
+
+| | |
+|---|---|
+| Board menu | Click the bar icon |
+| New widget | **New** in the board menu |
+| Hide / show editor | **Hide** / **Show**, or right click the bar icon |
+| Cheat sheet | **Help** — drops a widget listing the syntax |
+| Edit in widget | Click the widget body |
+| Full editor | Show the editor; pick a document in the sidebar |
+| Render | Click away, or `Esc` |
+| Tick a box | Click ☐ / ☑ |
+| Pin to desk | Editor **Pin to desk** — puts the open document on the wallpaper |
+| Delete | Editor **Delete** — next to Pin to desk. Removes the open document |
+| Save | Editor **Save** — next to Delete. Picks a `.md` path in a system dialog |
+| Fullscreen | Editor **Fullscreen** — top right of the title bar. Esc or the button exits |
+| Close a widget | **Close** in the widget header — document stays in the editor |
+| Move | Drag the widget header — across monitors too |
+| Resize | Drag the corner grip |
+
+Hide folds **only the editor**. Widgets stay on the desk. Pinned widgets sit on
+the editor; unpinned widgets live on the wallpaper.
+
+## Markdown
+
+Bodies are CommonMark, rendered by Qt: headings, **bold**, *italic*, `code`,
+quotes, tables, lists, links.
+
+Checklists are `- [ ]` / `- [x]`, and ticking a box in the rendered view
+rewrites the markdown underneath.
+
+The editor toolbar wraps the usual marks (bold, italic, headings, lists, tasks,
+links) without round-tripping the source through the renderer.
+
+## Storage
+
+`~/.local/state/omarchy/pinmark.json`, written 400ms after the last edit.
+Edit it with the shell stopped — the plugin owns the file while running.
+
+## Hyprland
+
+```
+layerrule = ignorezero, pinmark-widget
+layerrule = blur, pinmark-widget
+layerrule = ignorezero, pinmark-pinned
+layerrule = blur, pinmark-pinned
+layerrule = ignorezero, pinmark-editor
+```
+
+Unpinned widgets use namespace `pinmark-widget` on the Bottom layer.
+Pinned widgets use `pinmark-pinned` on Overlay (above the editor).
+The editor uses `pinmark-editor` on Top.
+
+## Development
+
+```bash
+node test.mjs
+omarchy plugin validate .
+omarchy-shell shell rescanPlugins
+```
 
 ## License
 
