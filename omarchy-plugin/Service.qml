@@ -168,7 +168,7 @@ Item {
     "",
     "> Pin a widget so it sits on the editor.",
     "",
-    "Header: **Unpin** sends a widget to the wallpaper. **Close** hides it.",
+    "Header: **Close** hides the widget. The document stays in the editor.",
     "The document stays in the editor. Drag the header to move."
   ].join("\n")
 
@@ -188,8 +188,8 @@ Item {
     "## Pin",
     "",
     "1. Open a document in this editor",
-    "2. Click **Pin to desk**, then **Pin** on the widget to float it on the editor",
-    "3. **Unpin** sends it back to the wallpaper. **Close** hides the widget.",
+    "2. Click **Pin to desk** so it appears on the wallpaper",
+    "3. **Close** hides the widget. The document stays in the editor.",
     "",
     "## Checklists",
     "",

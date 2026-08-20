@@ -265,7 +265,7 @@ PanelWindow {
 
           MouseArea {
             id: dragArea
-            anchors { fill: parent; rightMargin: 148 }
+            anchors { fill: parent; rightMargin: 76 }
             cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
             property real ox: 0
             property real oy: 0
@@ -322,11 +322,6 @@ PanelWindow {
               }
             }
 
-            HeaderButton {
-              glyph: win.pinned ? "Unpin" : "Pin"
-              glyphColor: win.pinned ? win.accent : win.pen
-              onActivated: host.togglePin(win.modelData)
-            }
             HeaderButton {
               glyph: "Close"
               glyphColor: win.pen

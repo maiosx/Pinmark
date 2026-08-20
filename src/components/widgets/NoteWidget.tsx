@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Pin, PinOff, X } from "lucide-react";
+import { X } from "lucide-react";
 import { MarkdownPreview } from "@/components/markdown/MarkdownPreview";
 import { PALETTE, useStore, type Widget } from "@/lib/store";
 import { clamp, cn } from "@/lib/utils";
@@ -18,8 +18,6 @@ export function NoteWidget({ widget }: Props) {
   const updateWidget = useStore((s) => s.updateWidget);
   const raiseWidget = useStore((s) => s.raiseWidget);
   const cycleColor = useStore((s) => s.cycleColor);
-  const togglePin = useStore((s) => s.togglePin);
-  const unpinWidget = useStore((s) => s.unpinWidget);
   const removeWidget = useStore((s) => s.removeWidget);
   const setActiveDoc = useStore((s) => s.setActiveDoc);
 
@@ -176,25 +174,6 @@ export function NoteWidget({ widget }: Props) {
           data-chrome
           onPointerDown={(e) => e.stopPropagation()}
         >
-          {widget.pinned ? (
-            <ChromeBtn
-              label="Unpin"
-              paper={paper}
-              onClick={() => unpinWidget(widget.id)}
-            >
-              <PinOff className="size-3.5" />
-              Unpin
-            </ChromeBtn>
-          ) : (
-            <ChromeBtn
-              label="Pin"
-              paper={paper}
-              onClick={() => togglePin(widget.id)}
-            >
-              <Pin className="size-3.5" />
-              Pin
-            </ChromeBtn>
-          )}
           <ChromeBtn
             label="Close note"
             paper={paper}
