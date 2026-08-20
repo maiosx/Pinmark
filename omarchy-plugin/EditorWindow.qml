@@ -170,6 +170,28 @@ PanelWindow {
         }
 
         Rectangle {
+          width: delLabel.implicitWidth + 18
+          height: 26
+          radius: 6
+          color: "transparent"
+          border.width: 1
+          border.color: Qt.rgba(0.93, 0.92, 0.89, 0.18)
+          Text {
+            id: delLabel
+            anchors.centerIn: parent
+            text: "Delete"
+            color: "#c45c4a"
+            font.family: Style.font.family
+            font.pixelSize: Style.font.caption
+          }
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: if (host.activeId) host.removeNote(host.activeId)
+          }
+        }
+
+        Rectangle {
           width: hideLabel.implicitWidth + 18
           height: 26
           radius: 6

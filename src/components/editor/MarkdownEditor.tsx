@@ -211,6 +211,18 @@ export function MarkdownEditor() {
           <Pin className={cn("size-3.5", onDesk && "fill-current")} />
           {onEditor ? "Move to desk" : onDesk ? "On desk" : "Pin to desk"}
         </Button>
+        {doc && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex text-muted hover:text-danger"
+            aria-label="Delete document"
+            onClick={() => removeDoc(doc.id)}
+          >
+            <Trash2 className="size-3.5" />
+            Delete
+          </Button>
+        )}
         <Button variant="ghost" size="icon" aria-label="Fold editor" onClick={toggleEditor}>
           <X className="size-4" />
         </Button>
@@ -331,7 +343,7 @@ export function MarkdownEditor() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-2 text-xs text-muted hover:text-danger"
+                  className="h-7 px-2 text-xs text-muted hover:text-danger sm:hidden"
                   onClick={() => removeDoc(doc.id)}
                 >
                   <Trash2 className="size-3" />
