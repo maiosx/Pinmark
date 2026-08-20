@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""Pick a destination and write a markdown file. Runs out-of-process so
+Quickshell's layer-shell never hosts a Qt FileDialog (that crashes the shell).
+"""
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+def documents_dir() -> Path:
+    docs = Path.home() / "Documents"
+    docs.mkdir(parents=True, exist_ok=True)
+    return docs
+
+
+def pick_path(suggested: str) -> str:
+    initial = str(documents_dir() / suggested)
+    dialogs = [
+        [
+            "zenity",
+            "--file-selection",
+            "--save",
+            "--confirm-overwrite",
+            "--title=Save markdown",
+            f"--filename={initial}",
+            "--file-filter=Markdown | *.md",
+        ],
+        [
+            "qarma",
+            "--file-selection",
+            "--save",
+            "--confirm-overwrite",
+            "--title=Save markdown",
+            f"--filename={initial}",
+        ],
+        ["kdialog", "--getsavefilename", initial, "Markdown (*.md)"],
+        ["yad", "--file-selection", "--save", "--confirm-overwrite", f"--filename={initial}"],
+    ]
+    for cmd in dialogs:
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+        except FileNotFoundError:
+            continue
+        except OSError:
+            continue
+        if result.returncode == 0:
+            return result.stdout.strip()
+        if result.returncode in (1, 5, 252):
+            return ""
+
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+
+        root = tk.Tk()
+        root.withdraw()
+        try:
+            root.attributes("-topmost", True)
+        except tk.TclError:
+            pass
+        path = filedialog.asksaveasfilename(
+            defaultextension=".md",
+            filetypes=[("Markdown", "*.md"), ("All files", "*.*")],
+            initialdir=str(documents_dir()),
+            initialfile=suggested,
+            title="Save markdown",
+        )
+        root.destroy()
+        return str(path or "")
+    except Exception:
+        return str(documents_dir() / suggested)
+
+
+def main() -> int:
+    suggested = sys.argv[1] if len(sys.argv) > 1 else "untitled.md"
+    buf = Path(sys.argv[2]) if len(sys.argv) > 2 else None
+    if buf is None or not buf.is_file():
+        print("pinmark-save: missing buffer", file=sys.stderr)
+        return 2
+    dest = pick_path(suggested)
+    if not dest:
+        return 1
+    path = Path(dest).expanduser()
+    if path.suffix.lower() not in {".md", ".markdown"}:
+        path = path.with_suffix(".md")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(buf.read_text(encoding="utf-8"), encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    os.environ.setdefault("GDK_BACKEND", "wayland,x11")
+    raise SystemExit(main())

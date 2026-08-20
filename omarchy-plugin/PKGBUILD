@@ -1,6 +1,6 @@
 # Maintainer: maiosx
 pkgname=omarchy-plugin-pinmark
-pkgver=1.0.7
+pkgver=1.0.8
 pkgrel=1
 pkgdesc="Pinmark — markdown editor with pinnable widgets for Omarchy (Arch)"
 arch=('any')
@@ -16,11 +16,16 @@ package() {
   srcdir_name="$(find "$srcdir" -maxdepth 1 -type d -name 'pinmark-omarchy-*' | head -n1)"
   local dest="$pkgdir/usr/share/omarchy/plugins/io.github.maiosx.pinmark"
   install -d "$dest"
-  for f in manifest.json Service.qml Widget.qml DeskSurface.qml EditorWindow.qml Model.js LICENSE README.md; do
-    install -m644 "$srcdir_name/$f" "$dest/$f"
+  for f in manifest.json Service.qml Widget.qml DeskSurface.qml EditorWindow.qml Model.js LICENSE README.md pinmark-save; do
+    if [[ "$f" == "pinmark-save" ]]; then
+      install -m755 "$srcdir_name/$f" "$dest/$f"
+    else
+      install -m644 "$srcdir_name/$f" "$dest/$f"
+    fi
   done
   install -Dm755 "$srcdir_name/install.sh" "$pkgdir/usr/bin/pinmark-omarchy-install"
   install -Dm755 "$srcdir_name/pinmark-open" "$pkgdir/usr/bin/pinmark-open"
+  install -Dm755 "$srcdir_name/pinmark-save" "$pkgdir/usr/bin/pinmark-save"
   install -Dm644 "$srcdir_name/pinmark.desktop" "$pkgdir/usr/share/applications/pinmark.desktop"
   install -Dm644 "$srcdir_name/pinmark-mime.xml" "$pkgdir/usr/share/mime/packages/pinmark.xml"
 }

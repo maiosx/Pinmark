@@ -15,15 +15,19 @@ MIME="$DATA/mime/packages"
 
 mkdir -p "$DEST" "$STATE" "$BIN" "$APP" "$MIME"
 
-for f in manifest.json Service.qml Widget.qml DeskSurface.qml EditorWindow.qml Model.js LICENSE README.md; do
+for f in manifest.json Service.qml Widget.qml DeskSurface.qml EditorWindow.qml Model.js LICENSE README.md pinmark-save; do
   if [[ ! -f "$SRC/$f" ]]; then
     echo "missing $f in $SRC" >&2
     exit 1
   fi
   cp -f "$SRC/$f" "$DEST/$f"
 done
+chmod +x "$DEST/pinmark-save" 2>/dev/null || true
 
 install -m755 "$SRC/pinmark-open" "$BIN/pinmark-open"
+if [[ -f "$SRC/pinmark-save" ]]; then
+  install -m755 "$SRC/pinmark-save" "$BIN/pinmark-save"
+fi
 
 if [[ -f "$SRC/pinmark.desktop" ]]; then
   sed "s|^Exec=.*|Exec=${BIN}/pinmark-open %F|" "$SRC/pinmark.desktop" \

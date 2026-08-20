@@ -15,12 +15,16 @@ Item {
 
   readonly property string storePath: Quickshell.env("HOME") + "/.local/state/omarchy/pinmark.json"
   readonly property string openInboxPath: Quickshell.env("HOME") + "/.local/state/omarchy/pinmark-open.json"
+  readonly property string saveBufPath: Quickshell.env("HOME") + "/.local/state/omarchy/pinmark-save-buf.md"
+  readonly property string pluginDir: Quickshell.env("HOME") + "/.config/omarchy/plugins/io.github.maiosx.pinmark"
 
   readonly property var palette: ["#eef2e6", "#e7eef3", "#f3efe6", "#eceff1", "#f2ebe6", "#e8eee6", "#1c1e1b"]
   readonly property var accents: ["#8a9a7c", "#6e8ca3", "#a89880", "#8a9296", "#a88878", "#6f8468", "#c5c1b4"]
 
   property bool editorVisible: true
   property string activeId: ""
+  property string saveSuggest: "untitled.md"
+  property bool saveTriedUsr: false
 
   // Kept so older JSON with `"alwaysOnTop": true` still pins every widget.
   property bool alwaysOnTop: false
@@ -353,15 +357,19 @@ Item {
   }
 
   function saveNoteTo(url) {
+    root.saveSuggest = String(url || "untitled.md")
+    root.openSave()
+  }
+
+  function openSave() {
     var note = root.noteData(root.activeId)
     if (!note) return
-    var dest = String(url || "")
-    dest = dest.replace(/^file:\/\//, "")
-    try { dest = decodeURIComponent(dest) } catch (e) {}
-    if (!dest) return
-    if (!/\.(md|markdown)$/i.test(dest)) dest += ".md"
-    saveOut.path = dest
-    saveOut.setText(note.text.charAt(note.text.length - 1) === "\n" ? note.text : note.text + "\n")
+    var text = String(note.text || "")
+    if (text.length && text.charAt(text.length - 1) !== "\n") text += "\n"
+    root.saveSuggest = Model.suggestedFileName(text)
+    root.saveTriedUsr = false
+    saveBuf.setText(text)
+    saveKick.restart()
   }
 
   function ingestOpenInbox(raw) {
@@ -424,12 +432,39 @@ Item {
   }
 
   FileView {
-    id: saveOut
+    id: saveBuf
+    path: root.saveBufPath
     watchChanges: false
     atomicWrites: true
     printErrors: false
     onSaveFailed: function (error) {
-      console.warn("pinmark: could not save markdown: " + error)
+      console.warn("pinmark: could not stage markdown save: " + error)
+    }
+  }
+
+  Timer {
+    id: saveKick
+    interval: 80
+    repeat: false
+    onTriggered: {
+      saveProc.running = false
+      saveProc.command = ["python3", root.pluginDir + "/pinmark-save", root.saveSuggest, root.saveBufPath]
+      saveProc.running = true
+    }
+  }
+
+  Process {
+    id: saveProc
+    running: false
+    onExited: function (code) {
+      if (code === 2 && !root.saveTriedUsr) {
+        root.saveTriedUsr = true
+        saveProc.running = false
+        saveProc.command = ["python3", "/usr/share/omarchy/plugins/io.github.maiosx.pinmark/pinmark-save", root.saveSuggest, root.saveBufPath]
+        saveProc.running = true
+      } else if (code !== 0 && code !== 1) {
+        console.warn("pinmark: save helper exited " + code)
+      }
     }
   }
 
