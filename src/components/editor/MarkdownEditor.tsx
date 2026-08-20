@@ -23,6 +23,8 @@ import {
   Table,
   Trash2,
   Type,
+  Maximize2,
+  Minimize2,
   X,
 } from "lucide-react";
 import { MarkdownPreview } from "@/components/markdown/MarkdownPreview";
@@ -52,9 +54,57 @@ export function MarkdownEditor() {
   const doc = activeDocId ? docs[activeDocId] : undefined;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewScroll = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLElement>(null);
   const syncing = useRef(false);
   const [clockReady, setClockReady] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
   useEffect(() => setClockReady(true), []);
+
+  useEffect(() => {
+    const onFs = () => {
+      if (!document.fullscreenElement) setFullscreen(false);
+    };
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "F11") {
+        e.preventDefault();
+        void toggleFullscreen();
+      } else if (e.key === "Escape" && fullscreen) {
+        e.preventDefault();
+        void exitFullscreen();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fullscreen]);
+
+  async function exitFullscreen() {
+    setFullscreen(false);
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+      } catch {
+        /* preview hosts often block this */
+      }
+    }
+  }
+
+  async function toggleFullscreen() {
+    if (fullscreen) {
+      await exitFullscreen();
+      return;
+    }
+    setFullscreen(true);
+    try {
+      await frameRef.current?.requestFullscreen();
+    } catch {
+      /* CSS fullscreen still applies */
+    }
+  }
 
   const pinnedOnEditor = useMemo(() => {
     const set = new Set<string>();
@@ -136,6 +186,7 @@ export function MarkdownEditor() {
 
   return (
     <section
+      ref={frameRef}
       aria-hidden={!visible}
       aria-label="Markdown editor"
       className={cn(
@@ -144,6 +195,7 @@ export function MarkdownEditor() {
         visible
           ? "pointer-events-auto scale-100 opacity-100"
           : "pointer-events-none scale-95 opacity-0 duration-150",
+        fullscreen && "is-fullscreen",
       )}
     >
       <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-2">
@@ -223,7 +275,24 @@ export function MarkdownEditor() {
             Delete
           </Button>
         )}
-        <Button variant="ghost" size="icon" aria-label="Fold editor" onClick={toggleEditor}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+          aria-pressed={fullscreen}
+          onClick={() => void toggleFullscreen()}
+        >
+          {fullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Fold editor"
+          onClick={() => {
+            void exitFullscreen();
+            toggleEditor();
+          }}
+        >
           <X className="size-4" />
         </Button>
       </header>

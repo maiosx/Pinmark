@@ -27,8 +27,17 @@ chmod +x install.sh
 omarchy-restart-shell
 ```
 
-`install.sh` copies the plugin into `~/.config/omarchy/plugins/io.github.maiosx.pinmark`
-and reminds you to enable it.
+`install.sh` copies the plugin into `~/.config/omarchy/plugins/io.github.maiosx.pinmark`,
+installs `pinmark-open`, and registers Pinmark as the default app for `.md` files.
+
+## Markdown files
+
+Opening a `.md` file (double-click, `xdg-open note.md`, or `pinmark-open note.md`)
+loads it in the Pinmark editor.
+
+```bash
+pinmark-open ~/notes/draft.md
+```
 
 ## Remove
 
@@ -56,6 +65,7 @@ No extra packages — Omarchy's shell (Quickshell/Qt) is enough.
 | Tick a box | Click ☐ / ☑ |
 | Pin to desk | Editor **Pin to desk** — puts the open document on the wallpaper |
 | Delete | Editor **Delete** — next to Pin to desk. Removes the open document |
+| Fullscreen | Editor **Fullscreen** — top right of the title bar. Esc or the button exits |
 | Close a widget | **Close** in the widget header — document stays in the editor |
 | Move | Drag the widget header — across monitors too |
 | Resize | Drag the corner grip |

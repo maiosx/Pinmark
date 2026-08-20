@@ -14,6 +14,7 @@ Item {
   id: root
 
   readonly property string storePath: Quickshell.env("HOME") + "/.local/state/omarchy/pinmark.json"
+  readonly property string openInboxPath: Quickshell.env("HOME") + "/.local/state/omarchy/pinmark-open.json"
 
   readonly property var palette: ["#eef2e6", "#e7eef3", "#f3efe6", "#eceff1", "#f2ebe6", "#e8eee6", "#1c1e1b"]
   readonly property var accents: ["#8a9a7c", "#6e8ca3", "#a89880", "#8a9296", "#a88878", "#6f8468", "#c5c1b4"]
@@ -351,6 +352,28 @@ Item {
     if (ids.length === 0) root.seedDefaults()
   }
 
+  function ingestOpenInbox(raw) {
+    var list = null
+    try { list = JSON.parse(raw) } catch (e) { list = null }
+    if (!Array.isArray(list) || list.length === 0) return
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i] || {}
+      var body = String(item.text || "")
+      var name = String(item.name || "Untitled").replace(/\.(md|markdown|mdown|mkd)$/i, "")
+      if (body.length === 0) continue
+      if (!/^\s{0,3}#{1,6}\s+/m.test(body))
+        body = "# " + (name || "Untitled") + "\n\n" + body
+      root.addNote(null, {
+        text: body,
+        pinned: false,
+        desk: false,
+        focus: i === list.length - 1
+      })
+    }
+    root.editorVisible = true
+    openInbox.setText("[]\n")
+  }
+
   function flush() {
     if (!root.loaded) return
     var out = []
@@ -386,6 +409,16 @@ Item {
     onSaveFailed: function (error) {
       console.warn("pinmark: could not write " + root.storePath + ": " + error)
     }
+  }
+
+  FileView {
+    id: openInbox
+    path: root.openInboxPath
+    watchChanges: true
+    atomicWrites: true
+    printErrors: false
+    onLoaded: root.ingestOpenInbox(text())
+    onLoadFailed: function () {}
   }
 
   Process {

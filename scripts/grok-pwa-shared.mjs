@@ -159,6 +159,15 @@ export function renderWebManifest(hostHeader) {
           type: "image/png",
         },
       ],
+      file_handlers: [
+        {
+          action: "/",
+          accept: {
+            "text/markdown": [".md", ".markdown", ".mdown", ".mkd"],
+            "text/x-markdown": [".md", ".markdown"],
+          },
+        },
+      ],
     },
     null,
     2,

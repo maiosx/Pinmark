@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { BoardMenu } from "@/components/desktop/BoardMenu";
 import { TopBar } from "@/components/desktop/TopBar";
 import { Wallpaper } from "@/components/desktop/Wallpaper";
 import { MarkdownEditor } from "@/components/editor/MarkdownEditor";
 import { NoteWidget } from "@/components/widgets/NoteWidget";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { bindMarkdownFileOpener, openMarkdownFiles } from "@/lib/open-markdown";
 import { useStore } from "@/lib/store";
 
 export function DeskApp() {
@@ -13,6 +14,7 @@ export function DeskApp() {
   const rescueWidgets = useStore((s) => s.rescueWidgets);
   const toggleEditor = useStore((s) => s.toggleEditor);
   const setMenuOpen = useStore((s) => s.setMenuOpen);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void useStore.persist.rehydrate();
@@ -25,12 +27,18 @@ export function DeskApp() {
     return () => window.removeEventListener("resize", onResize);
   }, [rescueWidgets]);
 
+  useEffect(() => bindMarkdownFileOpener(), []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;
       if (meta && e.shiftKey && e.key.toLowerCase() === "h") {
         e.preventDefault();
         toggleEditor();
+      }
+      if (meta && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        fileRef.current?.click();
       }
       if (e.key === "Escape") setMenuOpen(false);
     };
@@ -41,6 +49,19 @@ export function DeskApp() {
   return (
     <TooltipProvider>
       <div className="relative h-dvh w-full overflow-hidden bg-bg text-fg">
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".md,.markdown,.mdown,.mkd,text/markdown"
+          multiple
+          className="sr-only"
+          aria-label="Open markdown files"
+          onChange={(e) => {
+            const files = e.target.files;
+            if (files?.length) void openMarkdownFiles(files);
+            e.target.value = "";
+          }}
+        />
         <Wallpaper />
         <TopBar />
         {widgetOrder.map((id) => {

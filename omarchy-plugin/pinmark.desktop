@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Pinmark
+GenericName=Markdown Editor
+Comment=Markdown, pinned to your desk
+Exec=pinmark-open %F
+TryExec=pinmark-open
+Icon=accessories-text-editor
+Terminal=false
+StartupNotify=false
+NoDisplay=false
+Categories=Office;TextEditor;Utility;
+MimeType=text/markdown;text/x-markdown;
+Keywords=markdown;notes;editor;pinmark;

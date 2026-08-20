@@ -44,6 +44,7 @@ PanelWindow {
   readonly property var active: host.noteData(host.activeId)
   property string mode: "split"
   property bool sidebarOpen: true
+  property bool fullscreen: false
   property string syncedId: ""
 
   function syncBody() {
@@ -78,13 +79,13 @@ PanelWindow {
     id: frame
     anchors {
       fill: parent
-      leftMargin: editor.width >= 1024 ? 300 : Math.max(16, Math.min(48, editor.width * 0.04))
-      rightMargin: Math.max(16, Math.min(48, editor.width * 0.04))
-      topMargin: 10
-      bottomMargin: Math.max(24, editor.height * 0.06)
+      leftMargin: editor.fullscreen ? 0 : (editor.width >= 1024 ? 300 : Math.max(16, Math.min(48, editor.width * 0.04)))
+      rightMargin: editor.fullscreen ? 0 : Math.max(16, Math.min(48, editor.width * 0.04))
+      topMargin: editor.fullscreen ? 0 : 10
+      bottomMargin: editor.fullscreen ? 0 : Math.max(24, editor.height * 0.06)
     }
     color: "#1c1e1b"
-    radius: 14
+    radius: editor.fullscreen ? 0 : 14
     border.width: 1
     border.color: Qt.rgba(0.93, 0.92, 0.89, 0.12)
 
@@ -192,6 +193,28 @@ PanelWindow {
         }
 
         Rectangle {
+          width: fullLabel.implicitWidth + 18
+          height: 26
+          radius: 6
+          color: editor.fullscreen ? Qt.rgba(0.93, 0.92, 0.89, 0.12) : "transparent"
+          border.width: 1
+          border.color: Qt.rgba(0.93, 0.92, 0.89, 0.18)
+          Text {
+            id: fullLabel
+            anchors.centerIn: parent
+            text: editor.fullscreen ? "Exit full" : "Fullscreen"
+            color: "#eceae4"
+            font.family: Style.font.family
+            font.pixelSize: Style.font.caption
+          }
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: editor.fullscreen = !editor.fullscreen
+          }
+        }
+
+        Rectangle {
           width: hideLabel.implicitWidth + 18
           height: 26
           radius: 6
@@ -209,7 +232,10 @@ PanelWindow {
           MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
-            onClicked: host.toggleEditor()
+            onClicked: {
+              editor.fullscreen = false
+              host.toggleEditor()
+            }
           }
         }
       }

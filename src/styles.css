@@ -268,12 +268,20 @@
     top: 3.5rem;
     bottom: 0.75rem;
   }
+  .editor-frame.is-fullscreen {
+    inset: 0;
+    border-radius: 0;
+    z-index: 4000;
+  }
   @media (min-width: 1024px) {
     .editor-frame {
       left: 20rem;
       right: 2rem;
       top: 4rem;
       bottom: 1.5rem;
+    }
+    .editor-frame.is-fullscreen {
+      inset: 0;
     }
   }
 
