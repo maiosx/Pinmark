@@ -56,7 +56,16 @@ export function MarkdownEditor() {
   const [clockReady, setClockReady] = useState(false);
   useEffect(() => setClockReady(true), []);
 
-  const pinnedIds = useMemo(() => {
+  const pinnedOnEditor = useMemo(() => {
+    const set = new Set<string>();
+    for (const id of widgetOrder) {
+      const w = widgets[id];
+      if (w?.pinned) set.add(w.docId);
+    }
+    return set;
+  }, [widgets, widgetOrder]);
+
+  const deskWidgetIds = useMemo(() => {
     const set = new Set<string>();
     for (const id of widgetOrder) {
       const w = widgets[id];
@@ -64,6 +73,9 @@ export function MarkdownEditor() {
     }
     return set;
   }, [widgets, widgetOrder]);
+
+  const onDesk = activeDocId ? deskWidgetIds.has(activeDocId) : false;
+  const onEditor = activeDocId ? pinnedOnEditor.has(activeDocId) : false;
 
   function run(command: EditorCommand) {
     const el = textareaRef.current;
@@ -189,9 +201,15 @@ export function MarkdownEditor() {
             </button>
           ))}
         </div>
-        <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={pinActiveDoc}>
-          <Pin className="size-3.5" />
-          Pin to desk
+        <Button
+          variant="ghost"
+          size="sm"
+          className="hidden sm:inline-flex"
+          aria-pressed={onDesk}
+          onClick={pinActiveDoc}
+        >
+          <Pin className={cn("size-3.5", onDesk && "fill-current")} />
+          {onEditor ? "Move to desk" : onDesk ? "On desk" : "Pin to desk"}
         </Button>
         <Button variant="ghost" size="icon" aria-label="Fold editor" onClick={toggleEditor}>
           <X className="size-4" />
@@ -234,8 +252,13 @@ export function MarkdownEditor() {
                     )}
                   >
                       <span className="flex items-center gap-1.5 truncate text-sm font-medium">
-                      {pinnedIds.has(id) && (
-                        <Pin className="size-3 shrink-0 text-sage" />
+                      {deskWidgetIds.has(id) && (
+                        <Pin
+                          className={cn(
+                            "size-3 shrink-0",
+                            pinnedOnEditor.has(id) ? "fill-current text-sage" : "text-sage",
+                          )}
+                        />
                       )}
                       <span className="truncate">{d.title || "Untitled"}</span>
                     </span>
@@ -297,11 +320,12 @@ export function MarkdownEditor() {
               <Button
                 variant="ghost"
                 size="sm"
-                  className="h-7 px-2 text-xs md:hidden"
+                className="h-7 px-2 text-xs sm:hidden"
+                aria-pressed={onDesk}
                 onClick={pinActiveDoc}
               >
-                <Pin className="size-3" />
-                Pin
+                <Pin className={cn("size-3", onDesk && "fill-current")} />
+                {onEditor ? "To desk" : onDesk ? "On desk" : "Pin"}
               </Button>
               {doc && (
                 <Button

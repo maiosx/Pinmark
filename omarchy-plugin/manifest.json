@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.maiosx.pinmark",
+  "name": "Pinmark",
+  "version": "1.0.0",
+  "author": "maiosx",
+  "license": "MIT",
+  "description": "Markdown editor with pinnable widgets on the Omarchy desk. Hide folds the editor; pinned widgets stay on top of it.",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "Widget.qml"
+  },
+  "barWidget": {
+    "displayName": "Pinmark",
+    "description": "Open the board menu. Hide shows or folds the editor. Right click to toggle the editor.",
+    "category": "Productivity",
+    "aliases": [
+      "pinmark",
+      "markdown",
+      "notes",
+      "widgets",
+      "editor"
+    ],
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}

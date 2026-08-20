@@ -159,6 +159,8 @@ Click a widget to edit its **markdown**. Click away, or press Esc, to render.
 Drag the header to move, the corner grip to resize.
 
 The **Hide** button in the bar menu shows or hides the full markdown editor. Pinned widgets stay on top of it.
+
+On Arch Linux (Omarchy), install from the board menu — Copy the plugin command, or grab the zip.
 `;
 
 export const WELCOME_MARKDOWN = `# Welcome to Pinmark

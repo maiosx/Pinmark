@@ -71,6 +71,8 @@ type State = {
   pinActiveDoc: () => void;
   addHelp: () => void;
   rescueWidgets: (boardW: number, boardH: number) => void;
+  boardW: number;
+  boardH: number;
 };
 
 function seed() {
@@ -135,6 +137,40 @@ function seed() {
 const BAR = 52;
 const MIN_W = 200;
 const MIN_H = 140;
+const RAIL_X = 16;
+const RAIL_GAP = 12;
+const WIDE = 1024;
+
+function railSlot(
+  widgets: Record<string, Widget>,
+  widgetOrder: string[],
+  boardH: number,
+  skipId?: string,
+) {
+  let y = BAR + 20;
+  for (const id of widgetOrder) {
+    if (id === skipId) continue;
+    const w = widgets[id];
+    if (!w || w.pinned) continue;
+    if (Math.abs(w.x - RAIL_X) > 140) continue;
+    y = Math.max(y, w.y + w.h + RAIL_GAP);
+  }
+  const h = 240;
+  if (y + h > boardH - 12) y = BAR + 20;
+  return { x: RAIL_X, y, w: 236, h };
+}
+
+function editorSlot(boardW: number, boardH: number, size?: { w: number; h: number }) {
+  const w = size?.w ?? 268;
+  const h = size?.h ?? 236;
+  const leftMin = boardW >= WIDE ? 340 : 16;
+  return {
+    x: clamp(boardW - w - 40, leftMin, Math.max(leftMin, boardW - w - 16)),
+    y: clamp(boardH - h - 36, BAR + 56, Math.max(BAR + 56, boardH - h - 16)),
+    w,
+    h,
+  };
+}
 
 export const useStore = create<State>()(
   persist(
@@ -145,6 +181,8 @@ export const useStore = create<State>()(
       editorMode: "split",
       sidebarOpen: true,
       menuOpen: false,
+      boardW: 1280,
+      boardH: 800,
       setHydrated: (v) => set({ hydrated: v }),
       toggleEditor: () =>
         set((s) => ({ editorVisible: !s.editorVisible, menuOpen: false })),
@@ -289,25 +327,85 @@ export const useStore = create<State>()(
           const prev = s.widgets[id];
           if (!prev) return s;
           const z = s.topZ + 1;
+          const pinned = !prev.pinned;
+          const wide = s.boardW >= WIDE;
+          let { x, y } = prev;
+          if (pinned) {
+            if (!wide || prev.x < 300) {
+              const slot = editorSlot(s.boardW, s.boardH, { w: prev.w, h: prev.h });
+              x = slot.x;
+              y = slot.y;
+            }
+          } else if (wide) {
+            const slot = railSlot(s.widgets, s.widgetOrder, s.boardH, id);
+            x = slot.x;
+            y = slot.y;
+          }
           return {
             topZ: z,
             widgets: {
               ...s.widgets,
-              [id]: { ...prev, pinned: !prev.pinned, z },
+              [id]: { ...prev, pinned, z, x, y },
             },
           };
         }),
       pinActiveDoc: () => {
         const s = get();
         if (!s.activeDocId) return;
+        const wide = s.boardW >= WIDE;
         const existing = s.widgetOrder.find((id) => s.widgets[id]?.docId === s.activeDocId);
         if (existing) {
           const w = s.widgets[existing]!;
-          if (!w.pinned) get().togglePin(existing);
-          get().raiseWidget(existing);
+          if (!wide && !w.pinned) {
+            const slot = editorSlot(s.boardW, s.boardH, { w: w.w, h: w.h });
+            set((cur) => {
+              const prev = cur.widgets[existing];
+              if (!prev) return cur;
+              const z = cur.topZ + 1;
+              return {
+                topZ: z,
+                widgets: {
+                  ...cur.widgets,
+                  [existing]: { ...prev, pinned: true, z, x: slot.x, y: slot.y },
+                },
+              };
+            });
+            return;
+          }
+          if (w.pinned) {
+            const slot = wide
+              ? railSlot(s.widgets, s.widgetOrder, s.boardH, existing)
+              : editorSlot(s.boardW, s.boardH, { w: w.w, h: w.h });
+            set((cur) => {
+              const prev = cur.widgets[existing];
+              if (!prev) return cur;
+              const z = cur.topZ + 1;
+              return {
+                topZ: z,
+                widgets: {
+                  ...cur.widgets,
+                  [existing]: {
+                    ...prev,
+                    pinned: !wide,
+                    z,
+                    x: slot.x,
+                    y: slot.y,
+                  },
+                },
+              };
+            });
+          } else {
+            get().raiseWidget(existing);
+          }
           return;
         }
-        get().addWidget(s.activeDocId, { pinned: true, x: 72, y: 96, w: 280, h: 240 });
+        if (wide) {
+          const slot = railSlot(s.widgets, s.widgetOrder, s.boardH);
+          get().addWidget(s.activeDocId, { pinned: false, ...slot });
+        } else {
+          const slot = editorSlot(s.boardW, s.boardH);
+          get().addWidget(s.activeDocId, { pinned: true, ...slot });
+        }
       },
       addHelp: () => {
         get().addDoc({
@@ -333,11 +431,12 @@ export const useStore = create<State>()(
               changed = true;
             }
           }
-          return changed ? { widgets } : s;
+          if (!changed && s.boardW === boardW && s.boardH === boardH) return s;
+          return { widgets: changed ? widgets : s.widgets, boardW, boardH };
         }),
     }),
     {
-      name: "pinmark-v2",
+      name: "pinmark-v3",
       skipHydration: true,
       partialize: (s) => ({
         docs: s.docs,

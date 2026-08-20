@@ -92,6 +92,16 @@ var Bold = createLucideIcon("bold", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Check = createLucideIcon("check", [["path", {
+	d: "M20 6 9 17l-5-5",
+	key: "1gmf2c"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var ChevronsLeft = createLucideIcon("chevrons-left", [["path", {
 	d: "m11 17-5-5 5-5",
 	key: "13zhaf"
@@ -125,6 +135,47 @@ var Code = createLucideIcon("code", [["polyline", {
 	points: "8 6 2 12 8 18",
 	key: "1eg1df"
 }]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Copy = createLucideIcon("copy", [["rect", {
+	width: "14",
+	height: "14",
+	x: "8",
+	y: "8",
+	rx: "2",
+	ry: "2",
+	key: "17jyea"
+}], ["path", {
+	d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",
+	key: "zix9uf"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Download = createLucideIcon("download", [
+	["path", {
+		d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4",
+		key: "ih7n3h"
+	}],
+	["polyline", {
+		points: "7 10 12 15 17 10",
+		key: "2ggqvy"
+	}],
+	["line", {
+		x1: "12",
+		x2: "12",
+		y1: "15",
+		y2: "3",
+		key: "1vk2je"
+	}]
+]);
 /**
 * @license lucide-react v0.510.0 - ISC
 *
@@ -610,4 +661,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Code as C, Bold as E, Eye as S, ChevronsLeft as T, ListChecks as _, Table as a, Heading2 as b, SquareSplitHorizontal as c, Pin as d, PanelLeftOpen as f, ListOrdered as g, List as h, Trash2 as i, Quote as l, Minus as m, Type as n, Strikethrough as o, PanelLeftClose as p, TriangleAlert as r, StickyNote as s, X as t, Plus as u, Link2 as v, ChevronsRight as w, Heading1 as x, Italic as y };
+export { Download as C, ChevronsLeft as D, ChevronsRight as E, Check as O, Eye as S, Code as T, ListChecks as _, Table as a, Heading2 as b, SquareSplitHorizontal as c, Pin as d, PanelLeftOpen as f, ListOrdered as g, List as h, Trash2 as i, Bold as k, Quote as l, Minus as m, Type as n, Strikethrough as o, PanelLeftClose as p, TriangleAlert as r, StickyNote as s, X as t, Plus as u, Link2 as v, Copy as w, Heading1 as x, Italic as y };

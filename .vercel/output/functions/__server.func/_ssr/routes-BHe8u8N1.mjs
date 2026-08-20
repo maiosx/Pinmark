@@ -1,7 +1,7 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { u as require_react } from "../_libs/@floating-ui/react-dom+[...].mjs";
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
-import { C as Code, E as Bold, S as Eye, T as ChevronsLeft, _ as ListChecks, a as Table, b as Heading2, c as SquareSplitHorizontal, d as Pin, f as PanelLeftOpen, g as ListOrdered, h as List, i as Trash2, l as Quote, m as Minus, n as Type, o as Strikethrough, p as PanelLeftClose, s as StickyNote, t as X, u as Plus, v as Link2, w as ChevronsRight, x as Heading1, y as Italic } from "../_libs/lucide-react.mjs";
+import { C as Download, D as ChevronsLeft, E as ChevronsRight, O as Check, S as Eye, T as Code, _ as ListChecks, a as Table, b as Heading2, c as SquareSplitHorizontal, d as Pin, f as PanelLeftOpen, g as ListOrdered, h as List, i as Trash2, k as Bold, l as Quote, m as Minus, n as Type, o as Strikethrough, p as PanelLeftClose, s as StickyNote, t as X, u as Plus, v as Link2, w as Copy, x as Heading1, y as Italic } from "../_libs/lucide-react.mjs";
 import { n as clsx, t as cva } from "../_libs/class-variance-authority+clsx.mjs";
 import { i as Slot } from "../_libs/@radix-ui/react-dismissable-layer+[...].mjs";
 import { t as twMerge } from "../_libs/tailwind-merge.mjs";
@@ -11,7 +11,7 @@ import { t as Markdown } from "../_libs/react-markdown+[...].mjs";
 import { t as remarkGfm } from "../_libs/remark-gfm.mjs";
 import { t as rehypeSanitize } from "../_libs/rehype-sanitize.mjs";
 import { n as Portal, r as Provider, t as Content2 } from "../_libs/@radix-ui/react-tooltip+[...].mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-C3JWPBpW.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-BHe8u8N1.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function cn(...inputs) {
@@ -194,6 +194,8 @@ Click a widget to edit its **markdown**. Click away, or press Esc, to render.
 Drag the header to move, the corner grip to resize.
 
 The **Hide** button in the bar menu shows or hides the full markdown editor. Pinned widgets stay on top of it.
+
+On Arch Linux (Omarchy), install from the board menu — Copy the plugin command, or grab the zip.
 `;
 var WELCOME_MARKDOWN = `# Welcome to Pinmark
 
@@ -352,6 +354,38 @@ function seed() {
 var BAR$1 = 52;
 var MIN_W$1 = 200;
 var MIN_H$1 = 140;
+var RAIL_X = 16;
+var RAIL_GAP = 12;
+var WIDE = 1024;
+function railSlot(widgets, widgetOrder, boardH, skipId) {
+	let y = 72;
+	for (const id of widgetOrder) {
+		if (id === skipId) continue;
+		const w = widgets[id];
+		if (!w || w.pinned) continue;
+		if (Math.abs(w.x - RAIL_X) > 140) continue;
+		y = Math.max(y, w.y + w.h + RAIL_GAP);
+	}
+	const h = 240;
+	if (y + h > boardH - 12) y = 72;
+	return {
+		x: RAIL_X,
+		y,
+		w: 236,
+		h
+	};
+}
+function editorSlot(boardW, boardH, size) {
+	const w = size?.w ?? 268;
+	const h = size?.h ?? 236;
+	const leftMin = boardW >= WIDE ? 340 : 16;
+	return {
+		x: clamp(boardW - w - 40, leftMin, Math.max(leftMin, boardW - w - 16)),
+		y: clamp(boardH - h - 36, 108, Math.max(108, boardH - h - 16)),
+		w,
+		h
+	};
+}
 var useStore = create()(persist((set, get) => ({
 	hydrated: true,
 	...seed(),
@@ -359,6 +393,8 @@ var useStore = create()(persist((set, get) => ({
 	editorMode: "split",
 	sidebarOpen: true,
 	menuOpen: false,
+	boardW: 1280,
+	boardH: 800,
 	setHydrated: (v) => set({ hydrated: v }),
 	toggleEditor: () => set((s) => ({
 		editorVisible: !s.editorVisible,
@@ -526,14 +562,33 @@ var useStore = create()(persist((set, get) => ({
 		const prev = s.widgets[id];
 		if (!prev) return s;
 		const z = s.topZ + 1;
+		const pinned = !prev.pinned;
+		const wide = s.boardW >= WIDE;
+		let { x, y } = prev;
+		if (pinned) {
+			if (!wide || prev.x < 300) {
+				const slot = editorSlot(s.boardW, s.boardH, {
+					w: prev.w,
+					h: prev.h
+				});
+				x = slot.x;
+				y = slot.y;
+			}
+		} else if (wide) {
+			const slot = railSlot(s.widgets, s.widgetOrder, s.boardH, id);
+			x = slot.x;
+			y = slot.y;
+		}
 		return {
 			topZ: z,
 			widgets: {
 				...s.widgets,
 				[id]: {
 					...prev,
-					pinned: !prev.pinned,
-					z
+					pinned,
+					z,
+					x,
+					y
 				}
 			}
 		};
@@ -541,19 +596,74 @@ var useStore = create()(persist((set, get) => ({
 	pinActiveDoc: () => {
 		const s = get();
 		if (!s.activeDocId) return;
+		const wide = s.boardW >= WIDE;
 		const existing = s.widgetOrder.find((id) => s.widgets[id]?.docId === s.activeDocId);
 		if (existing) {
-			if (!s.widgets[existing].pinned) get().togglePin(existing);
-			get().raiseWidget(existing);
+			const w = s.widgets[existing];
+			if (!wide && !w.pinned) {
+				const slot = editorSlot(s.boardW, s.boardH, {
+					w: w.w,
+					h: w.h
+				});
+				set((cur) => {
+					const prev = cur.widgets[existing];
+					if (!prev) return cur;
+					const z = cur.topZ + 1;
+					return {
+						topZ: z,
+						widgets: {
+							...cur.widgets,
+							[existing]: {
+								...prev,
+								pinned: true,
+								z,
+								x: slot.x,
+								y: slot.y
+							}
+						}
+					};
+				});
+				return;
+			}
+			if (w.pinned) {
+				const slot = wide ? railSlot(s.widgets, s.widgetOrder, s.boardH, existing) : editorSlot(s.boardW, s.boardH, {
+					w: w.w,
+					h: w.h
+				});
+				set((cur) => {
+					const prev = cur.widgets[existing];
+					if (!prev) return cur;
+					const z = cur.topZ + 1;
+					return {
+						topZ: z,
+						widgets: {
+							...cur.widgets,
+							[existing]: {
+								...prev,
+								pinned: !wide,
+								z,
+								x: slot.x,
+								y: slot.y
+							}
+						}
+					};
+				});
+			} else get().raiseWidget(existing);
 			return;
 		}
-		get().addWidget(s.activeDocId, {
-			pinned: true,
-			x: 72,
-			y: 96,
-			w: 280,
-			h: 240
-		});
+		if (wide) {
+			const slot = railSlot(s.widgets, s.widgetOrder, s.boardH);
+			get().addWidget(s.activeDocId, {
+				pinned: false,
+				...slot
+			});
+		} else {
+			const slot = editorSlot(s.boardW, s.boardH);
+			get().addWidget(s.activeDocId, {
+				pinned: true,
+				...slot
+			});
+		}
 	},
 	addHelp: () => {
 		get().addDoc({
@@ -591,10 +701,15 @@ var useStore = create()(persist((set, get) => ({
 				changed = true;
 			}
 		}
-		return changed ? { widgets } : s;
+		if (!changed && s.boardW === boardW && s.boardH === boardH) return s;
+		return {
+			widgets: changed ? widgets : s.widgets,
+			boardW,
+			boardH
+		};
 	})
 }), {
-	name: "pinmark-v2",
+	name: "pinmark-v3",
 	skipHydration: true,
 	partialize: (s) => ({
 		docs: s.docs,
@@ -608,6 +723,8 @@ var useStore = create()(persist((set, get) => ({
 		topZ: s.topZ
 	})
 }));
+var ARCH_INSTALL = "omarchy plugin add https://github.com/maiosx/pinmark-omarchy.git --enable && omarchy-restart-shell";
+var ARCH_REPO = "https://github.com/maiosx/pinmark-omarchy";
 function BoardMenu() {
 	const open = useStore((s) => s.menuOpen);
 	const setMenuOpen = useStore((s) => s.setMenuOpen);
@@ -617,6 +734,7 @@ function BoardMenu() {
 	const addDoc = useStore((s) => s.addDoc);
 	const addHelp = useStore((s) => s.addHelp);
 	const panelRef = (0, import_react.useRef)(null);
+	const [copied, setCopied] = (0, import_react.useState)(false);
 	(0, import_react.useEffect)(() => {
 		if (!open) return;
 		const onKey = (e) => {
@@ -635,14 +753,28 @@ function BoardMenu() {
 			window.removeEventListener("pointerdown", onDown);
 		};
 	}, [open, setMenuOpen]);
+	(0, import_react.useEffect)(() => {
+		if (!copied) return;
+		const id = window.setTimeout(() => setCopied(false), 1800);
+		return () => window.clearTimeout(id);
+	}, [copied]);
 	if (!open) return null;
+	const status = editorVisible ? "Editor open" : "Hidden";
+	async function copyInstall() {
+		try {
+			await navigator.clipboard.writeText(ARCH_INSTALL);
+			setCopied(true);
+		} catch {
+			setCopied(false);
+		}
+	}
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "pointer-events-none fixed inset-0 z-[5000]",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			ref: panelRef,
 			role: "dialog",
 			"aria-label": "Pinmark board",
-			className: "pointer-events-auto absolute top-12 right-3 w-80 max-w-[calc(100vw-1.5rem)] rounded-xl bg-bg-elevated p-4 shadow-[var(--shadow-editor)]",
+			className: "pointer-events-auto absolute top-12 right-3 w-80 max-h-[calc(100dvh-4rem)] max-w-[calc(100vw-1.5rem)] overflow-y-auto rounded-xl bg-bg-elevated p-4 shadow-[var(--shadow-editor)]",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: "flex items-center gap-3",
@@ -661,7 +793,7 @@ function BoardMenu() {
 								children: "Pinmark"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 								className: "text-xs font-semibold tracking-wider text-muted uppercase",
-								children: editorVisible ? "Editor open" : "Hidden"
+								children: status
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
@@ -706,6 +838,46 @@ function BoardMenu() {
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 					className: "mt-3 text-xs leading-relaxed text-muted",
 					children: editorVisible ? "Hide folds the editor. Pinned widgets stay on top of it." : "The editor is hidden. Show it from here — pinned widgets stay on the desk."
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "my-3.5 h-px bg-border" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "text-xs font-semibold tracking-wider text-muted uppercase",
+					children: "Arch Linux · Omarchy"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "mt-1.5 text-xs leading-relaxed text-muted",
+					children: "Installs as a desk plugin: widgets on the wallpaper, pinned ones over the editor."
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
+					className: "mt-2 overflow-x-auto rounded-md bg-bg px-2.5 py-2 font-mono text-[11px] leading-relaxed text-fg/90",
+					children: ARCH_INSTALL
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "mt-2 grid grid-cols-2 gap-1.5",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						variant: "outline",
+						size: "sm",
+						className: "h-9",
+						onClick: () => void copyInstall(),
+						children: [copied ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, { className: "size-3.5" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Copy, { className: "size-3.5" }), copied ? "Copied" : "Copy"]
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+						variant: "outline",
+						size: "sm",
+						className: "h-9",
+						asChild: true,
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
+							href: "/pinmark-omarchy.zip",
+							download: "pinmark-omarchy.zip",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, { className: "size-3.5" }), "Zip"]
+						})
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+					href: ARCH_REPO,
+					target: "_blank",
+					rel: "noreferrer",
+					className: "mt-2 block text-xs text-link hover:underline",
+					children: "github.com/maiosx/pinmark-omarchy"
 				})
 			]
 		})
@@ -1088,7 +1260,15 @@ function MarkdownEditor() {
 	const syncing = (0, import_react.useRef)(false);
 	const [clockReady, setClockReady] = (0, import_react.useState)(false);
 	(0, import_react.useEffect)(() => setClockReady(true), []);
-	const pinnedIds = (0, import_react.useMemo)(() => {
+	const pinnedOnEditor = (0, import_react.useMemo)(() => {
+		const set = /* @__PURE__ */ new Set();
+		for (const id of widgetOrder) {
+			const w = widgets[id];
+			if (w?.pinned) set.add(w.docId);
+		}
+		return set;
+	}, [widgets, widgetOrder]);
+	const deskWidgetIds = (0, import_react.useMemo)(() => {
 		const set = /* @__PURE__ */ new Set();
 		for (const id of widgetOrder) {
 			const w = widgets[id];
@@ -1096,6 +1276,8 @@ function MarkdownEditor() {
 		}
 		return set;
 	}, [widgets, widgetOrder]);
+	const onDesk = activeDocId ? deskWidgetIds.has(activeDocId) : false;
+	const onEditor = activeDocId ? pinnedOnEditor.has(activeDocId) : false;
 	function run(command) {
 		const el = textareaRef.current;
 		if (!el || !doc) return;
@@ -1207,9 +1389,10 @@ function MarkdownEditor() {
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
 					variant: "ghost",
 					size: "sm",
-					className: "hidden md:inline-flex",
+					className: "hidden sm:inline-flex",
+					"aria-pressed": onDesk,
 					onClick: pinActiveDoc,
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pin, { className: "size-3.5" }), "Pin to desk"]
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pin, { className: cn("size-3.5", onDesk && "fill-current") }), onEditor ? "Move to desk" : onDesk ? "On desk" : "Pin to desk"]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
 					variant: "ghost",
@@ -1250,7 +1433,7 @@ function MarkdownEditor() {
 							className: cn("mb-0.5 flex w-full flex-col rounded-sm px-2.5 py-2 text-left transition-colors duration-150", id === activeDocId ? "bg-fg/10" : "hover:bg-fg/6"),
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
 								className: "flex items-center gap-1.5 truncate text-sm font-medium",
-								children: [pinnedIds.has(id) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pin, { className: "size-3 shrink-0 text-sage" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								children: [deskWidgetIds.has(id) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pin, { className: cn("size-3 shrink-0", pinnedOnEditor.has(id) ? "fill-current text-sage" : "text-sage") }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 									className: "truncate",
 									children: d.title || "Untitled"
 								})]
@@ -1305,9 +1488,10 @@ function MarkdownEditor() {
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
 								variant: "ghost",
 								size: "sm",
-								className: "h-7 px-2 text-xs md:hidden",
+								className: "h-7 px-2 text-xs sm:hidden",
+								"aria-pressed": onDesk,
 								onClick: pinActiveDoc,
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pin, { className: "size-3" }), "Pin"]
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pin, { className: cn("size-3", onDesk && "fill-current") }), onEditor ? "To desk" : onDesk ? "On desk" : "Pin"]
 							}), doc && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
 								variant: "ghost",
 								size: "sm",

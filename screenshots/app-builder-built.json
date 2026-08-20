@@ -7,9 +7,9 @@
       "status": 200,
       "title": "Pinmark",
       "hasCanvas": false,
-      "bodyTextLen": 962,
-      "bodyTextHash": "b88d40df4ae5c4a9f8117dbedf7ca88e0d4306456ca5eb1a814b7d7f8e7fd61e",
-      "bodyTextPrefix": "Pinmark 1 2 3 Thu, Aug 20, 06:13 PM EDITOR·2 WIDGETS Today Morni",
+      "bodyTextLen": 931,
+      "bodyTextHash": "3eede3c7b568942284febcd30f23e11eb156e0a8ea983bd2b887f7e2af4a7637",
+      "bodyTextPrefix": "Pinmark 1 2 3 EDITOR·2 WIDGETS Today Morning pages. Keep this pi",
       "horizontalOverflow": false,
       "consoleErrors": [],
       "pageErrors": [],
@@ -33,8 +33,6 @@
   "brandWarnings": [],
   "authWarnings": [],
   "verdictFile": "/workspace/screenshots/app-builder-built.json",
-  "divergesFromBaseline": true,
-  "baselineReasons": [
-    "desktop: body text replaced (similar length, page start changed)"
-  ]
+  "divergesFromBaseline": false,
+  "baselineReasons": []
 }
