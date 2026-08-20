@@ -7,6 +7,7 @@ import { clamp, cn } from "@/lib/utils";
 const MIN_W = 200;
 const MIN_H = 140;
 const BAR = 52;
+const DRAG_THRESHOLD = 4;
 
 type Props = {
   widget: Widget;
@@ -29,6 +30,7 @@ export function NoteWidget({ widget }: Props) {
     h: widget.h,
   });
   const dragging = useRef(false);
+  const moved = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const swatch = PALETTE[widget.color % PALETTE.length]!;
@@ -50,37 +52,53 @@ export function NoteWidget({ widget }: Props) {
   const z = (widget.pinned ? 2000 : 20) + widget.z;
 
   function startDrag(e: React.PointerEvent<HTMLElement>) {
-    if ((e.target as HTMLElement).closest("[data-chrome]")) return;
+    if (e.button !== 0) return;
+    if ((e.target as HTMLElement).closest("[data-no-drag]")) return;
     e.preventDefault();
     raiseWidget(widget.id);
     dragging.current = true;
+    moved.current = false;
     const ox = e.clientX - frame.x;
     const oy = e.clientY - frame.y;
+    const originX = e.clientX;
+    const originY = e.clientY;
     const start = { ...frame };
     const el = e.currentTarget;
     el.setPointerCapture(e.pointerId);
+
     const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - originX;
+      const dy = ev.clientY - originY;
+      if (!moved.current && dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
+      moved.current = true;
       const boardW = window.innerWidth;
       const boardH = window.innerHeight;
-      const next = {
+      setFrame({
         ...start,
         x: clamp(Math.round(ev.clientX - ox), 8, Math.max(8, boardW - start.w - 8)),
         y: clamp(Math.round(ev.clientY - oy), BAR, Math.max(BAR, boardH - start.h - 8)),
-      };
-      setFrame(next);
+      });
     };
     const onUp = (ev: PointerEvent) => {
       dragging.current = false;
-      el.releasePointerCapture(ev.pointerId);
+      try {
+        el.releasePointerCapture(ev.pointerId);
+      } catch {
+        /* already released */
+      }
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerup", onUp);
-      setFrame((f) => {
-        updateWidget(widget.id, { x: f.x, y: f.y });
-        return f;
-      });
+      el.removeEventListener("pointercancel", onUp);
+      if (moved.current) {
+        setFrame((f) => {
+          updateWidget(widget.id, { x: f.x, y: f.y });
+          return f;
+        });
+      }
     };
     el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onUp);
   }
 
   function startResize(e: React.PointerEvent<HTMLElement>) {
@@ -96,16 +114,19 @@ export function NoteWidget({ widget }: Props) {
     const onMove = (ev: PointerEvent) => {
       const boardW = window.innerWidth;
       const boardH = window.innerHeight;
-      const next = {
+      setFrame({
         ...start,
         w: clamp(start.w + (ev.clientX - ox), MIN_W, Math.max(MIN_W, boardW - start.x - 8)),
         h: clamp(start.h + (ev.clientY - oy), MIN_H, Math.max(MIN_H, boardH - start.y - 8)),
-      };
-      setFrame(next);
+      });
     };
     const onUp = (ev: PointerEvent) => {
       dragging.current = false;
-      el.releasePointerCapture(ev.pointerId);
+      try {
+        el.releasePointerCapture(ev.pointerId);
+      } catch {
+        /* already released */
+      }
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerup", onUp);
       setFrame((f) => {
@@ -141,14 +162,16 @@ export function NoteWidget({ widget }: Props) {
 
       <header
         className={cn(
-          "flex h-10 shrink-0 cursor-grab items-center gap-1 pr-1 pl-3.5 active:cursor-grabbing",
+          "flex h-10 shrink-0 cursor-grab items-center gap-1 pr-1 pl-3.5 select-none active:cursor-grabbing",
           paper ? "bg-ink/5" : "bg-fg/4",
         )}
+        style={{ touchAction: "none" }}
         onPointerDown={startDrag}
+        onDoubleClick={() => setActiveDoc(widget.docId)}
       >
         <button
           type="button"
-          data-chrome
+          data-no-drag
           title="Cycle colour"
           aria-label="Cycle colour"
           className="size-4 shrink-0 rounded-full shadow-[0_0_0_1px_rgb(0_0_0/0.2)]"
@@ -156,22 +179,18 @@ export function NoteWidget({ widget }: Props) {
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => cycleColor(widget.id)}
         />
-        <button
-          type="button"
-          data-chrome
+        <span
           className={cn(
             "min-w-0 flex-1 truncate text-left text-xs font-medium tracking-wide",
             paper ? "text-ink/80" : "text-fg/80",
           )}
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => setActiveDoc(widget.docId)}
-          title="Open in editor"
+          title="Drag to move. Double-click to open in the editor."
         >
           {doc.title}
-        </button>
+        </span>
         <div
           className="flex shrink-0 items-center gap-0.5"
-          data-chrome
+          data-no-drag
           onPointerDown={(e) => e.stopPropagation()}
         >
           <ChromeBtn

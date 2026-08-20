@@ -263,27 +263,59 @@ PanelWindow {
             color: parent.color
           }
 
-          MouseArea {
-            id: dragArea
+          Text {
+            id: headerTitle
+            anchors {
+              left: parent.left
+              right: parent.right
+              verticalCenter: parent.verticalCenter
+              leftMargin: 10
+              rightMargin: 80
+            }
+            text: Model.titleFromBody(win.source, "Untitled")
+            elide: Text.ElideRight
+            color: win.pen
+            font.family: Style.font.family
+            font.pixelSize: Style.font.caption
+            font.bold: true
+          }
+
+          Item {
+            id: dragStrip
+            z: 5
             anchors { fill: parent; rightMargin: 76 }
-            cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
-            property real ox: 0
-            property real oy: 0
-            onPressed: function (m) {
-              ox = m.x; oy = m.y
-              win.raise()
-              host.setActive(win.modelData)
-              win.trackPointer(m.x, m.y)
+
+            DragHandler {
+              id: moveHandler
+              target: null
+              acceptedButtons: Qt.LeftButton
+              grabPermissions: PointerHandler.CanTakeOverFromAnything
+              property real startX: 0
+              property real startY: 0
+              onActiveChanged: {
+                if (active) {
+                  startX = win.nx
+                  startY = win.ny
+                  win.raise()
+                  host.setActive(win.modelData)
+                  if (host.dragId !== win.modelData)
+                    host.beginDrag(win.modelData, card, win.nw, win.nh)
+                } else {
+                  win.settle()
+                }
+              }
+              onTranslationChanged: {
+                if (!active) return
+                win.dragTo(Math.round(startX + translation.x), Math.round(startY + translation.y))
+                win.pointerGx = (surface.screen ? surface.screen.x : 0) + win.nx + 24
+                win.pointerGy = (surface.screen ? surface.screen.y : 0) + win.ny + 12
+                win.publishDrag()
+              }
             }
-            onPositionChanged: function (m) {
-              if (!pressed) return
-              win.trackPointer(m.x, m.y)
-              win.dragTo(Math.round(win.nx + m.x - ox), Math.round(win.ny + m.y - oy))
-              if (host.dragId !== win.modelData) host.beginDrag(win.modelData, card, win.nw, win.nh)
-              win.publishDrag()
+
+            HoverHandler {
+              cursorShape: moveHandler.active ? Qt.ClosedHandCursor : Qt.OpenHandCursor
             }
-            onReleased: win.settle()
-            onCanceled: win.settle()
           }
 
           Row {

@@ -78,7 +78,7 @@ PanelWindow {
     id: frame
     anchors {
       fill: parent
-      leftMargin: Math.max(16, Math.min(48, editor.width * 0.04))
+      leftMargin: editor.width >= 1024 ? 300 : Math.max(16, Math.min(48, editor.width * 0.04))
       rightMargin: Math.max(16, Math.min(48, editor.width * 0.04))
       topMargin: 10
       bottomMargin: Math.max(24, editor.height * 0.06)
