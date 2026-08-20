@@ -9,7 +9,7 @@ for Arch Linux.
 ## Install (Arch / Omarchy)
 
 ```bash
-omarchy plugin add https://github.com/maiosx/pinmark-omarchy.git --enable
+omarchy plugin add https://github.com/maiosx/pinmark.git --enable
 omarchy-restart-shell
 ```
 
