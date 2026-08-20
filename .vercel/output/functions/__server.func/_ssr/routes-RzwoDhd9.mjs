@@ -1,7 +1,7 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { u as require_react } from "../_libs/@floating-ui/react-dom+[...].mjs";
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
-import { C as Download, D as ChevronsLeft, E as ChevronsRight, O as Check, S as Eye, T as Code, _ as ListChecks, a as Table, b as Heading2, c as SquareSplitHorizontal, d as Pin, f as PanelLeftOpen, g as ListOrdered, h as List, i as Trash2, k as Bold, l as Quote, m as Minus, n as Type, o as Strikethrough, p as PanelLeftClose, s as StickyNote, t as X, u as Plus, v as Link2, w as Copy, x as Heading1, y as Italic } from "../_libs/lucide-react.mjs";
+import { A as Bold, C as Eye, D as ChevronsRight, E as Code, O as ChevronsLeft, S as Heading1, T as Copy, _ as ListOrdered, a as Table, b as Italic, c as SquareSplitHorizontal, d as Pin, f as PinOff, g as List, h as Minus, i as Trash2, k as Check, l as Quote, m as PanelLeftClose, n as Type, o as Strikethrough, p as PanelLeftOpen, s as StickyNote, t as X, u as Plus, v as ListChecks, w as Download, x as Heading2, y as Link2 } from "../_libs/lucide-react.mjs";
 import { n as clsx, t as cva } from "../_libs/class-variance-authority+clsx.mjs";
 import { i as Slot } from "../_libs/@radix-ui/react-dismissable-layer+[...].mjs";
 import { t as twMerge } from "../_libs/tailwind-merge.mjs";
@@ -11,7 +11,7 @@ import { t as Markdown } from "../_libs/react-markdown+[...].mjs";
 import { t as remarkGfm } from "../_libs/remark-gfm.mjs";
 import { t as rehypeSanitize } from "../_libs/rehype-sanitize.mjs";
 import { n as Portal, r as Provider, t as Content2 } from "../_libs/@radix-ui/react-tooltip+[...].mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-BHe8u8N1.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-RzwoDhd9.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function cn(...inputs) {
@@ -215,7 +215,7 @@ Use the toolbar or shortcuts:
 1. Open a document in this editor
 2. Click **Pin to desk** in the sidebar
 3. Drag the widget by its header
-4. Click the pin glyph so it sits *on* the editor
+4. Use **Unpin** to send it back to the desk, or **Close** to put it away
 
 ## Checklists
 
@@ -593,6 +593,31 @@ var useStore = create()(persist((set, get) => ({
 			}
 		};
 	}),
+	unpinWidget: (id) => {
+		const s = get();
+		const prev = s.widgets[id];
+		if (!prev || !prev.pinned) return;
+		const wide = s.boardW >= WIDE;
+		const slot = wide ? railSlot(s.widgets, s.widgetOrder, s.boardH, id) : {
+			x: clamp(prev.x, 8, Math.max(8, s.boardW - prev.w - 8)),
+			y: clamp(prev.y, 60, Math.max(60, s.boardH - prev.h - 8))
+		};
+		const z = s.topZ + 1;
+		set({
+			topZ: z,
+			editorVisible: wide ? s.editorVisible : false,
+			widgets: {
+				...s.widgets,
+				[id]: {
+					...prev,
+					pinned: false,
+					z,
+					x: slot.x,
+					y: slot.y
+				}
+			}
+		});
+	},
 	pinActiveDoc: () => {
 		const s = get();
 		if (!s.activeDocId) return;
@@ -1599,11 +1624,10 @@ function NoteWidget({ widget }) {
 	const raiseWidget = useStore((s) => s.raiseWidget);
 	const cycleColor = useStore((s) => s.cycleColor);
 	const togglePin = useStore((s) => s.togglePin);
+	const unpinWidget = useStore((s) => s.unpinWidget);
 	const removeWidget = useStore((s) => s.removeWidget);
-	const addDoc = useStore((s) => s.addDoc);
 	const setActiveDoc = useStore((s) => s.setActiveDoc);
 	const [editing, setEditing] = (0, import_react.useState)(false);
-	const [armed, setArmed] = (0, import_react.useState)(false);
 	const [frame, setFrame] = (0, import_react.useState)({
 		x: widget.x,
 		y: widget.y,
@@ -1611,7 +1635,6 @@ function NoteWidget({ widget }) {
 		h: widget.h
 	});
 	const dragging = (0, import_react.useRef)(false);
-	const armTimer = (0, import_react.useRef)(null);
 	const textareaRef = (0, import_react.useRef)(null);
 	const swatch = PALETTE[widget.color % PALETTE.length];
 	const accent = swatch.accent;
@@ -1634,11 +1657,6 @@ function NoteWidget({ widget }) {
 	(0, import_react.useEffect)(() => {
 		if (editing) textareaRef.current?.focus();
 	}, [editing]);
-	(0, import_react.useEffect)(() => {
-		return () => {
-			if (armTimer.current) window.clearTimeout(armTimer.current);
-		};
-	}, []);
 	if (!doc) return null;
 	const z = (widget.pinned ? 2e3 : 20) + widget.z;
 	function startDrag(e) {
@@ -1713,15 +1731,6 @@ function NoteWidget({ widget }) {
 		el.addEventListener("pointermove", onMove);
 		el.addEventListener("pointerup", onUp);
 	}
-	function armDelete() {
-		if (!body.trim() || armed) {
-			removeWidget(widget.id);
-			return;
-		}
-		setArmed(true);
-		if (armTimer.current) window.clearTimeout(armTimer.current);
-		armTimer.current = window.setTimeout(() => setArmed(false), 3e3);
-	}
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("article", {
 		className: cn("absolute flex flex-col overflow-hidden rounded-lg shadow-[var(--shadow-widget)]", paper ? "text-ink" : "bg-bg-elevated/92 text-fg backdrop-blur-sm"),
 		style: {
@@ -1740,7 +1749,7 @@ function NoteWidget({ widget }) {
 				"aria-hidden": true
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", {
-				className: cn("flex h-9 shrink-0 cursor-grab items-center gap-1 pr-1.5 pl-4 active:cursor-grabbing", paper ? "bg-ink/5" : "bg-fg/4"),
+				className: cn("flex h-10 shrink-0 cursor-grab items-center gap-1 pr-1 pl-3.5 active:cursor-grabbing", paper ? "bg-ink/5" : "bg-fg/4"),
 				onPointerDown: startDrag,
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
@@ -1763,44 +1772,26 @@ function NoteWidget({ widget }) {
 						children: doc.title
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "flex items-center",
+						className: "flex shrink-0 items-center gap-0.5",
 						"data-chrome": true,
 						onPointerDown: (e) => e.stopPropagation(),
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(IconBtn, {
-								label: widget.pinned ? "Unpin from editor" : "Pin onto editor",
-								onClick: () => togglePin(widget.id),
-								paper,
-								active: widget.pinned,
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pin, { className: cn("size-3.5", widget.pinned && "fill-current") })
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(IconBtn, {
-								label: "New widget nearby",
-								onClick: () => addDoc({
-									title: "Untitled",
-									body: "",
-									withWidget: true,
-									focus: false,
-									widget: {
-										x: frame.x + 28,
-										y: frame.y + 28,
-										w: frame.w,
-										h: frame.h,
-										color: widget.color,
-										pinned: widget.pinned
-									}
-								}),
-								paper,
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, { className: "size-3.5" })
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(IconBtn, {
-								label: armed ? "Click again to delete" : "Remove widget",
-								onClick: armDelete,
-								paper,
-								danger: armed,
-								children: armed ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, { className: "size-3.5" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: "size-3.5" })
-							})
-						]
+						children: [widget.pinned ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ChromeBtn, {
+							label: "Unpin",
+							paper,
+							onClick: () => unpinWidget(widget.id),
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PinOff, { className: "size-3.5" }), "Unpin"]
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ChromeBtn, {
+							label: "Pin",
+							paper,
+							onClick: () => togglePin(widget.id),
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pin, { className: "size-3.5" }), "Pin"]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ChromeBtn, {
+							label: "Close note",
+							paper,
+							danger: true,
+							onClick: () => removeWidget(widget.id),
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: "size-3.5" }), "Close"]
+						})]
 					})
 				]
 			}),
@@ -1855,13 +1846,16 @@ function NoteWidget({ widget }) {
 		]
 	});
 }
-function IconBtn({ children, onClick, label, paper, active, danger }) {
+function ChromeBtn({ children, onClick, label, paper, danger }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 		type: "button",
 		"aria-label": label,
 		title: label,
-		onClick,
-		className: cn("grid size-7 place-items-center rounded-xs transition-colors duration-150", paper ? "hover:bg-ink/8" : "hover:bg-fg/10", active && (paper ? "text-ink" : "text-accent"), danger && "text-danger"),
+		onClick: (e) => {
+			e.stopPropagation();
+			onClick();
+		},
+		className: cn("inline-flex h-8 items-center gap-1 rounded-xs px-2 text-xs font-medium transition-colors duration-150", paper ? "hover:bg-ink/10" : "hover:bg-fg/10", danger ? "text-muted hover:text-danger" : paper ? "text-ink/80" : "text-fg/80"),
 		children
 	});
 }

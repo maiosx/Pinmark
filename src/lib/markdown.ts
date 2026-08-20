@@ -181,7 +181,7 @@ Use the toolbar or shortcuts:
 1. Open a document in this editor
 2. Click **Pin to desk** in the sidebar
 3. Drag the widget by its header
-4. Click the pin glyph so it sits *on* the editor
+4. Use **Unpin** to send it back to the desk, or **Close** to put it away
 
 ## Checklists
 

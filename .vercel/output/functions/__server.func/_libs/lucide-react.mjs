@@ -447,6 +447,30 @@ var PanelLeftOpen = createLucideIcon("panel-left-open", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var PinOff = createLucideIcon("pin-off", [
+	["path", {
+		d: "M12 17v5",
+		key: "bb1du9"
+	}],
+	["path", {
+		d: "M15 9.34V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H7.89",
+		key: "znwnzq"
+	}],
+	["path", {
+		d: "m2 2 20 20",
+		key: "1ooewy"
+	}],
+	["path", {
+		d: "M9 9v1.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h11",
+		key: "c9qhm2"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Pin = createLucideIcon("pin", [["path", {
 	d: "M12 17v5",
 	key: "bb1du9"
@@ -661,4 +685,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Download as C, ChevronsLeft as D, ChevronsRight as E, Check as O, Eye as S, Code as T, ListChecks as _, Table as a, Heading2 as b, SquareSplitHorizontal as c, Pin as d, PanelLeftOpen as f, ListOrdered as g, List as h, Trash2 as i, Bold as k, Quote as l, Minus as m, Type as n, Strikethrough as o, PanelLeftClose as p, TriangleAlert as r, StickyNote as s, X as t, Plus as u, Link2 as v, Copy as w, Heading1 as x, Italic as y };
+export { Bold as A, Eye as C, ChevronsRight as D, Code as E, ChevronsLeft as O, Heading1 as S, Copy as T, ListOrdered as _, Table as a, Italic as b, SquareSplitHorizontal as c, Pin as d, PinOff as f, List as g, Minus as h, Trash2 as i, Check as k, Quote as l, PanelLeftClose as m, Type as n, Strikethrough as o, PanelLeftOpen as p, TriangleAlert as r, StickyNote as s, X as t, Plus as u, ListChecks as v, Download as w, Heading2 as x, Link2 as y };

@@ -47,7 +47,7 @@ No extra packages — Omarchy's shell (Quickshell/Qt) is enough.
 | | |
 |---|---|
 | Board menu | Click the bar icon |
-| New widget | **New**, or `+` in a widget header |
+| New widget | **New** in the board menu |
 | Hide / show editor | **Hide** / **Show**, or right click the bar icon |
 | Cheat sheet | **Help** — drops a widget listing the syntax |
 | Edit in widget | Click the widget body |
@@ -55,13 +55,11 @@ No extra packages — Omarchy's shell (Quickshell/Qt) is enough.
 | Render | Click away, or `Esc` |
 | Tick a box | Click ☐ / ☑ |
 | Pin to desk | Editor **Pin to desk** — puts the open document on the wallpaper |
-| Pin on the editor | `◉` in the widget header — Overlay layer, above the editor |
-| Unpin to the desk | `⊙` — Bottom layer, under normal windows |
+| Pin on the editor | **Pin** in the widget header — Overlay layer, above the editor |
+| Unpin to the desk | **Unpin** — Bottom layer, under normal windows |
+| Close a widget | **Close** in the widget header — document stays in the editor |
 | Move | Drag the header — across monitors too |
-| Move to another monitor | `◀` / `▶` |
 | Resize | Drag the corner grip |
-| Colour | `●` cycles sage → sky → sand → frost → clay → moss → ink |
-| Delete | `✕` — twice within 3s if the widget has text |
 
 Hide folds **only the editor**. Widgets stay on the desk. Pinned widgets sit on
 the editor; unpinned widgets live on the wallpaper.

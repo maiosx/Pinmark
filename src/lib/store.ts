@@ -68,6 +68,7 @@ type State = {
   raiseWidget: (id: string) => void;
   cycleColor: (id: string) => void;
   togglePin: (id: string) => void;
+  unpinWidget: (id: string) => void;
   pinActiveDoc: () => void;
   addHelp: () => void;
   rescueWidgets: (boardW: number, boardH: number) => void;
@@ -349,6 +350,27 @@ export const useStore = create<State>()(
             },
           };
         }),
+      unpinWidget: (id) => {
+        const s = get();
+        const prev = s.widgets[id];
+        if (!prev || !prev.pinned) return;
+        const wide = s.boardW >= WIDE;
+        const slot = wide
+          ? railSlot(s.widgets, s.widgetOrder, s.boardH, id)
+          : {
+              x: clamp(prev.x, 8, Math.max(8, s.boardW - prev.w - 8)),
+              y: clamp(prev.y, BAR + 8, Math.max(BAR + 8, s.boardH - prev.h - 8)),
+            };
+        const z = s.topZ + 1;
+        set({
+          topZ: z,
+          editorVisible: wide ? s.editorVisible : false,
+          widgets: {
+            ...s.widgets,
+            [id]: { ...prev, pinned: false, z, x: slot.x, y: slot.y },
+          },
+        });
+      },
       pinActiveDoc: () => {
         const s = get();
         if (!s.activeDocId) return;

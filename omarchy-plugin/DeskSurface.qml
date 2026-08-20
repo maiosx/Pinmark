@@ -100,7 +100,6 @@ PanelWindow {
       property int nh: 240
       property int ci: 0
       property bool pinned: false
-      property bool armedForDelete: false
       property string nscreen: ""
       property int pointerGx: 0
       property int pointerGy: 0
@@ -232,7 +231,7 @@ PanelWindow {
         Rectangle {
           id: header
           anchors { top: parent.top; left: parent.left; right: parent.right; leftMargin: 4 }
-          height: 26
+          height: 32
           radius: Style.cornerRadius
           color: win.headerPaper
 
@@ -244,7 +243,7 @@ PanelWindow {
 
           MouseArea {
             id: dragArea
-            anchors.fill: parent
+            anchors { fill: parent; rightMargin: 132 }
             cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
             property real ox: 0
             property real oy: 0
@@ -266,71 +265,45 @@ PanelWindow {
           }
 
           Row {
+            z: 10
             anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 4 }
-            spacing: 2
+            spacing: 4
 
             component HeaderButton: Rectangle {
               property alias glyph: label.text
               property color glyphColor: win.pen
               signal activated
-              width: 20
-              height: 20
-              radius: 3
+              implicitWidth: Math.max(28, label.implicitWidth + 14)
+              height: 24
+              radius: 4
               color: hover.containsMouse ? Qt.rgba(win.pen.r, win.pen.g, win.pen.b, 0.12) : "transparent"
               Text {
                 id: label
                 anchors.centerIn: parent
                 color: parent.glyphColor
                 font.family: Style.font.family
-                font.pixelSize: Style.font.body
+                font.pixelSize: Style.font.caption
               }
               MouseArea {
                 id: hover
                 anchors.fill: parent
                 hoverEnabled: true
+                preventStealing: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: parent.activated()
               }
             }
 
             HeaderButton {
-              glyph: "●"
-              glyphColor: win.dark ? "#eceae4" : Qt.darker(win.paper, 1.9)
-              onActivated: win.ci = (win.ci + 1) % host.palette.length
-            }
-            HeaderButton {
-              glyph: win.pinned ? "◉" : "⊙"
+              glyph: win.pinned ? "Unpin" : "Pin"
               glyphColor: win.pinned ? win.accent : win.pen
               onActivated: host.togglePin(win.modelData)
             }
             HeaderButton {
-              glyph: "◀"
-              visible: !!win.leftScreen
-              onActivated: win.moveToScreen(win.leftScreen)
+              glyph: "Close"
+              glyphColor: win.pen
+              onActivated: host.removeNote(win.modelData)
             }
-            HeaderButton {
-              glyph: "▶"
-              visible: !!win.rightScreen
-              onActivated: win.moveToScreen(win.rightScreen)
-            }
-            HeaderButton {
-              glyph: "+"
-              onActivated: host.addNote(win.modelData, { pinned: win.pinned })
-            }
-            HeaderButton {
-              glyph: win.armedForDelete ? "✕?" : "✕"
-              glyphColor: win.armedForDelete ? "#c45c4a" : win.pen
-              onActivated: {
-                if (win.source.length === 0 || win.armedForDelete) host.removeNote(win.modelData)
-                else { win.armedForDelete = true; disarm.restart() }
-              }
-            }
-          }
-
-          Timer {
-            id: disarm
-            interval: 3000
-            onTriggered: win.armedForDelete = false
           }
         }
 

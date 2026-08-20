@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Pin, Plus, Trash2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Pin, PinOff, X } from "lucide-react";
 import { MarkdownPreview } from "@/components/markdown/MarkdownPreview";
 import { PALETTE, useStore, type Widget } from "@/lib/store";
 import { clamp, cn } from "@/lib/utils";
@@ -19,12 +19,11 @@ export function NoteWidget({ widget }: Props) {
   const raiseWidget = useStore((s) => s.raiseWidget);
   const cycleColor = useStore((s) => s.cycleColor);
   const togglePin = useStore((s) => s.togglePin);
+  const unpinWidget = useStore((s) => s.unpinWidget);
   const removeWidget = useStore((s) => s.removeWidget);
-  const addDoc = useStore((s) => s.addDoc);
   const setActiveDoc = useStore((s) => s.setActiveDoc);
 
   const [editing, setEditing] = useState(false);
-  const [armed, setArmed] = useState(false);
   const [frame, setFrame] = useState({
     x: widget.x,
     y: widget.y,
@@ -32,7 +31,6 @@ export function NoteWidget({ widget }: Props) {
     h: widget.h,
   });
   const dragging = useRef(false);
-  const armTimer = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const swatch = PALETTE[widget.color % PALETTE.length]!;
@@ -48,12 +46,6 @@ export function NoteWidget({ widget }: Props) {
   useEffect(() => {
     if (editing) textareaRef.current?.focus();
   }, [editing]);
-
-  useEffect(() => {
-    return () => {
-      if (armTimer.current) window.clearTimeout(armTimer.current);
-    };
-  }, []);
 
   if (!doc) return null;
 
@@ -127,16 +119,6 @@ export function NoteWidget({ widget }: Props) {
     el.addEventListener("pointerup", onUp);
   }
 
-  function armDelete() {
-    if (!body.trim() || armed) {
-      removeWidget(widget.id);
-      return;
-    }
-    setArmed(true);
-    if (armTimer.current) window.clearTimeout(armTimer.current);
-    armTimer.current = window.setTimeout(() => setArmed(false), 3000);
-  }
-
   return (
     <article
       className={cn(
@@ -161,7 +143,7 @@ export function NoteWidget({ widget }: Props) {
 
       <header
         className={cn(
-          "flex h-9 shrink-0 cursor-grab items-center gap-1 pr-1.5 pl-4 active:cursor-grabbing",
+          "flex h-10 shrink-0 cursor-grab items-center gap-1 pr-1 pl-3.5 active:cursor-grabbing",
           paper ? "bg-ink/5" : "bg-fg/4",
         )}
         onPointerDown={startDrag}
@@ -189,45 +171,39 @@ export function NoteWidget({ widget }: Props) {
         >
           {doc.title}
         </button>
-        <div className="flex items-center" data-chrome onPointerDown={(e) => e.stopPropagation()}>
-          <IconBtn
-            label={widget.pinned ? "Unpin from editor" : "Pin onto editor"}
-            onClick={() => togglePin(widget.id)}
+        <div
+          className="flex shrink-0 items-center gap-0.5"
+          data-chrome
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          {widget.pinned ? (
+            <ChromeBtn
+              label="Unpin"
+              paper={paper}
+              onClick={() => unpinWidget(widget.id)}
+            >
+              <PinOff className="size-3.5" />
+              Unpin
+            </ChromeBtn>
+          ) : (
+            <ChromeBtn
+              label="Pin"
+              paper={paper}
+              onClick={() => togglePin(widget.id)}
+            >
+              <Pin className="size-3.5" />
+              Pin
+            </ChromeBtn>
+          )}
+          <ChromeBtn
+            label="Close note"
             paper={paper}
-            active={widget.pinned}
+            danger
+            onClick={() => removeWidget(widget.id)}
           >
-            <Pin className={cn("size-3.5", widget.pinned && "fill-current")} />
-          </IconBtn>
-          <IconBtn
-            label="New widget nearby"
-            onClick={() =>
-              addDoc({
-                title: "Untitled",
-                body: "",
-                withWidget: true,
-                focus: false,
-                widget: {
-                  x: frame.x + 28,
-                  y: frame.y + 28,
-                  w: frame.w,
-                  h: frame.h,
-                  color: widget.color,
-                  pinned: widget.pinned,
-                },
-              })
-            }
-            paper={paper}
-          >
-            <Plus className="size-3.5" />
-          </IconBtn>
-          <IconBtn
-            label={armed ? "Click again to delete" : "Remove widget"}
-            onClick={armDelete}
-            paper={paper}
-            danger={armed}
-          >
-            {armed ? <Trash2 className="size-3.5" /> : <X className="size-3.5" />}
-          </IconBtn>
+            <X className="size-3.5" />
+            Close
+          </ChromeBtn>
         </div>
       </header>
 
@@ -290,19 +266,17 @@ export function NoteWidget({ widget }: Props) {
   );
 }
 
-function IconBtn({
+function ChromeBtn({
   children,
   onClick,
   label,
   paper,
-  active,
   danger,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
   onClick: () => void;
   label: string;
   paper?: boolean;
-  active?: boolean;
   danger?: boolean;
 }) {
   return (
@@ -310,12 +284,18 @@ function IconBtn({
       type="button"
       aria-label={label}
       title={label}
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
       className={cn(
-        "grid size-7 place-items-center rounded-xs transition-colors duration-150",
-        paper ? "hover:bg-ink/8" : "hover:bg-fg/10",
-        active && (paper ? "text-ink" : "text-accent"),
-        danger && "text-danger",
+        "inline-flex h-8 items-center gap-1 rounded-xs px-2 text-xs font-medium transition-colors duration-150",
+        paper ? "hover:bg-ink/10" : "hover:bg-fg/10",
+        danger
+          ? "text-muted hover:text-danger"
+          : paper
+            ? "text-ink/80"
+            : "text-fg/80",
       )}
     >
       {children}
