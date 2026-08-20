@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Pick a destination and write a markdown file. Runs out-of-process so
-Quickshell's layer-shell never hosts a Qt FileDialog (that crashes the shell).
+"""Save a Pinmark note to a .md file.
+
+Runs as a normal process (not inside Quickshell's layer-shell) so a system
+file picker can open without crashing the shell.
 """
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -16,41 +19,79 @@ def documents_dir() -> Path:
     return docs
 
 
-def pick_path(suggested: str) -> str:
-    initial = str(documents_dir() / suggested)
-    dialogs = [
-        [
-            "zenity",
-            "--file-selection",
-            "--save",
-            "--confirm-overwrite",
-            "--title=Save markdown",
-            f"--filename={initial}",
-            "--file-filter=Markdown | *.md",
-        ],
-        [
-            "qarma",
-            "--file-selection",
-            "--save",
-            "--confirm-overwrite",
-            "--title=Save markdown",
-            f"--filename={initial}",
-        ],
-        ["kdialog", "--getsavefilename", initial, "Markdown (*.md)"],
-        ["yad", "--file-selection", "--save", "--confirm-overwrite", f"--filename={initial}"],
-    ]
-    for cmd in dialogs:
-        try:
-            result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-        except FileNotFoundError:
-            continue
-        except OSError:
-            continue
-        if result.returncode == 0:
-            return result.stdout.strip()
-        if result.returncode in (1, 5, 252):
-            return ""
+def notify(title: str, body: str) -> None:
+    try:
+        subprocess.run(["notify-send", "-a", "Pinmark", title, body], check=False)
+    except OSError:
+        pass
 
+
+def load_payload(argv: list[str]) -> tuple[str, str]:
+    if len(argv) >= 2 and argv[1].endswith(".json") and Path(argv[1]).is_file():
+        data = json.loads(Path(argv[1]).read_text(encoding="utf-8"))
+        name = str(data.get("name") or "untitled.md")
+        text = str(data.get("text") or "")
+        if text:
+            return name, text
+    if len(argv) >= 3 and Path(argv[2]).is_file():
+        return argv[1], Path(argv[2]).read_text(encoding="utf-8")
+    store = Path.home() / ".local/state/omarchy/pinmark.json"
+    if store.is_file():
+        data = json.loads(store.read_text(encoding="utf-8"))
+        active = str(data.get("activeId") or "")
+        for note in data.get("notes") or []:
+            if str(note.get("id") or "") == active:
+                text = str(note.get("text") or "")
+                heading = text.split("\n", 1)[0].lstrip("# ").strip() or "untitled"
+                return heading + ".md", text
+    return "untitled.md", ""
+
+
+def run_cmd(cmd: list[str]) -> str | None:
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    except OSError:
+        return None
+    if result.returncode == 0:
+        return result.stdout.strip()
+    if result.returncode in (1, 5, 252):
+        return ""
+    return None
+
+
+def gtk_pick(suggested: str, initial: Path) -> str | None:
+    try:
+        import gi
+
+        gi.require_version("Gtk", "3.0")
+        from gi.repository import Gtk
+    except Exception:
+        return None
+    try:
+        Gtk.init_check()
+        dialog = Gtk.FileChooserNative.new(
+            "Save markdown",
+            None,
+            Gtk.FileChooserAction.SAVE,
+            "Save",
+            "Cancel",
+        )
+        dialog.set_current_name(suggested)
+        dialog.set_current_folder(str(initial))
+        dialog.set_do_overwrite_confirmation(True)
+        filt = Gtk.FileFilter()
+        filt.set_name("Markdown")
+        filt.add_pattern("*.md")
+        dialog.add_filter(filt)
+        resp = dialog.run()
+        path = dialog.get_filename() if resp in (Gtk.ResponseType.ACCEPT, Gtk.ResponseType.OK) else ""
+        dialog.destroy()
+        return path or ""
+    except Exception:
+        return None
+
+
+def tk_pick(suggested: str, initial: Path) -> str | None:
     try:
         import tkinter as tk
         from tkinter import filedialog
@@ -64,30 +105,68 @@ def pick_path(suggested: str) -> str:
         path = filedialog.asksaveasfilename(
             defaultextension=".md",
             filetypes=[("Markdown", "*.md"), ("All files", "*.*")],
-            initialdir=str(documents_dir()),
+            initialdir=str(initial),
             initialfile=suggested,
             title="Save markdown",
         )
         root.destroy()
         return str(path or "")
     except Exception:
-        return str(documents_dir() / suggested)
+        return None
+
+
+def pick_path(suggested: str) -> str:
+    initial = documents_dir()
+    dest = str(initial / suggested)
+    for cmd in (
+        [
+            "zenity",
+            "--file-selection",
+            "--save",
+            "--confirm-overwrite",
+            "--title=Save markdown",
+            f"--filename={dest}",
+            "--file-filter=Markdown | *.md",
+        ],
+        [
+            "qarma",
+            "--file-selection",
+            "--save",
+            "--confirm-overwrite",
+            "--title=Save markdown",
+            f"--filename={dest}",
+        ],
+        ["kdialog", "--getsavefilename", dest, "Markdown (*.md)"],
+        ["yad", "--file-selection", "--save", "--confirm-overwrite", f"--filename={dest}"],
+    ):
+        picked = run_cmd(cmd)
+        if picked is not None:
+            return picked
+    for picker in (gtk_pick, tk_pick):
+        picked = picker(suggested, initial)
+        if picked is not None:
+            return picked
+    return dest
 
 
 def main() -> int:
-    suggested = sys.argv[1] if len(sys.argv) > 1 else "untitled.md"
-    buf = Path(sys.argv[2]) if len(sys.argv) > 2 else None
-    if buf is None or not buf.is_file():
-        print("pinmark-save: missing buffer", file=sys.stderr)
+    name, text = load_payload(sys.argv)
+    if not text:
+        notify("Pinmark", "Nothing to save")
         return 2
-    dest = pick_path(suggested)
+    if not name.lower().endswith(".md"):
+        name = f"{name}.md"
+    dest = pick_path(name)
     if not dest:
         return 1
     path = Path(dest).expanduser()
     if path.suffix.lower() not in {".md", ".markdown"}:
         path = path.with_suffix(".md")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(buf.read_text(encoding="utf-8"), encoding="utf-8")
+    if not text.endswith("\n"):
+        text += "\n"
+    path.write_text(text, encoding="utf-8")
+    notify("Pinmark", f"Saved {path.name}")
     return 0
 
 

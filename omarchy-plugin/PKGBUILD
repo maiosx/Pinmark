@@ -1,6 +1,6 @@
 # Maintainer: maiosx
 pkgname=omarchy-plugin-pinmark
-pkgver=1.0.9
+pkgver=1.0.10
 pkgrel=1
 pkgdesc="Pinmark — markdown editor with pinnable widgets for Omarchy (Arch)"
 arch=('any')
